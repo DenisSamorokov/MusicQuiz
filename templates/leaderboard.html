@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Таблица лидеров{% endblock %}
+
+{% block content %}
+    <div class="text-center">
+        <h2 class="text-xl font-semibold mb-4">Таблица лидеров</h2>
+        <div class="block-background p-6 rounded-lg max-w-lg mx-auto">
+            <div class="space-y-3">
+                {% for leader in leaders %}
+                    <div class="flex items-center justify-between p-2 bg-gray-800 rounded">
+                        <div class="flex items-center">
+                            <span class="w-6 h-6 {{ 'bg-yellow-500' if loop.index == 1 else 'bg-gray-500' if loop.index == 2 else 'bg-amber-800' if loop.index == 3 else '' }} rounded-full flex items-center justify-center text-xs font-bold mr-3">{{ loop.index }}</span>
+                            <span>{{ leader.username }}</span>
+                        </div>
+                        <span class="font-bold">{{ leader.score }} очков</span>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

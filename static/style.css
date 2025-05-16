@@ -1,0 +1,278 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    min-height: 100vh;
+    color: #e5e7eb;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+    min-height: 100vh;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.content-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.filters {
+    width: 200px;
+}
+
+.main-content {
+    flex: 1;
+    max-width: 600px;
+    margin: 0 3rem;
+}
+
+.sidebar {
+    width: 300px;
+    z-index: 800;
+}
+
+.block-background {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+}
+
+.custom-player {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(90deg, rgba(124,58,237,0.8) 0%, rgba(236,72,153,0.8) 100%);
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.play-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 2rem;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.play-btn:hover {
+    transform: scale(1.1);
+}
+
+.equalizer {
+    display: flex !important;
+    gap: 4px;
+    margin-left: 1rem;
+}
+
+.bar {
+    width: 6px;
+    height: 20px;
+    background: white;
+    border-radius: 3px;
+    animation: equalize 1s infinite;
+    opacity: 0.7;
+}
+
+.bar:nth-child(2) { animation-delay: 0.2s; }
+.bar:nth-child(3) { animation-delay: 0.4s; }
+.bar:nth-child(4) { animation-delay: 0.6s; }
+.bar:nth-child(5) { animation-delay: 0.8s; }
+
+@keyframes equalize {
+    0% { height: 20px; }
+    50% { height: 40px; }
+    100% { height: 20px; }
+}
+
+.equalizer.paused .bar {
+    animation-play-state: paused;
+}
+
+.option-card {
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.option-card:hover {
+    transform: translateY(-5px);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.option-card.selected {
+    background: linear-gradient(90deg, rgba(124,58,237,0.8) 0%, rgba(236,72,153,0.8) 100%);
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: #1e1e2f;
+    padding: 2rem;
+    border-radius: 12px;
+    text-align: center;
+    color: #e5e7eb;
+}
+
+.modal-content h2 {
+    color: #f87171;
+    margin-bottom: 1rem;
+}
+
+.modal-content h2.correct {
+    color: #28a745;
+}
+
+.modal-content p {
+    margin-bottom: 1rem;
+}
+
+.modal-content a {
+    display: inline-block;
+    margin-top: 1rem;
+    padding: 0.75rem 1.5rem;
+    background: #3b82f6;
+    color: white;
+    border-radius: 8px;
+    text-decoration: none;
+}
+
+.chat-fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #1e1e2f;
+    display: flex;
+    flex-direction: column;
+    padding: 2rem;
+    z-index: 900;
+}
+
+.chat-fullscreen-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    margin-bottom: 1rem;
+}
+
+.chat-input-form {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.chat-input {
+    flex: 1;
+    padding: 0.5rem;
+    background: #374151;
+    color: white;
+    border: none;
+    border-radius: 8px;
+}
+
+.chat-send-btn {
+    background: none;
+    color: #3b82f6;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0.5rem;
+}
+
+.leaderboard-fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #1e1e2f;
+    padding: 2rem;
+    text-align: center;
+    z-index: 900;
+}
+
+.filter-select {
+    width: 100%;
+    padding: 0.5rem;
+    background: #374151;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.filter-select option {
+    background: #374151;
+}
+
+.apply-btn {
+    width: 100%;
+    padding: 0.75rem;
+    background: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.apply-btn:hover {
+    background: #2563eb;
+}
+
+.filter-group {
+    margin-bottom: 1.5rem;
+}
+
+.flag-icon {
+    width: 20px;
+    height: 20px;
+    vertical-align: middle;
+    margin-right: 8px;
+}
+
+.loader {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

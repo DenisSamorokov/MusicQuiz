@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %} - Music Quiz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <a href="{{ url_for('index') }}">
+                <h1 class="text-3xl font-bold bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 bg-clip-text text-transparent">
+                    <i class="fas fa-music mr-2"></i>Music Quiz
+                </h1>
+            </a>
+            <div class="flex items-center space-x-4">
+                {% if current_user.is_authenticated %}
+                    <span class="text-sm">{{ current_user.username }}</span>
+                    <a href="{{ url_for('logout') }}" class="text-red-400 hover:text-red-300">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="text-blue-400 hover:text-blue-300">Войти</a>
+                    <a href="{{ url_for('register') }}" class="text-blue-400 hover:text-blue-300">Регистрация</a>
+                {% endif %}
+            </div>
+        </header>
+        <div class="content-wrapper">
+            <div class="filters block-background p-6">
+                <h2 class="text-xl font-semibold mb-4">Фильтры</h2>
+                <form id="filter-form" method="POST" action="/set_filter">
+                    <div class="filter-group">
+                        <label for="style-select" class="block mb-2">Жанр</label>
+                        <select id="style-select" name="style" class="filter-select">
+                            <option value="any" selected>Любой</option>
+                            <option value="Pop">Pop</option>
+                            <option value="Rock">Rock</option>
+                            <option value="Rap_Hip Hop">Rap/Hip Hop</option>
+                            <option value="R_B">R&B</option>
+                            <option value="Dance">Dance</option>
+                            <option value="Electro">Electro</option>
+                            <option value="Soul _ Funk">Soul & Funk</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="apply-btn">Применить фильтр</button>
+                </form>
+            </div>
+            <div class="main-content" id="main-content">
+                {% block content %}{% endblock %}
+            </div>
+            <div class="sidebar" id="sidebar">
+                {% if leaders %}
+                    <div class="block-background p-6 mb-6" id="leaderboard">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-xl font-semibold flex items-center">
+                                <i class="fas fa-trophy mr-2 text-yellow-400"></i>Таблица лидеров
+                            </h2>
+                            <button onclick="toggleLeaderboardFullscreen()" class="text-gray-400 hover:text-gray-300">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                        </div>
+                        <div class="space-y-3">
+                            {% for leader in leaders %}
+                                <div class="flex items-center justify-between p-2 bg-gray-700 rounded">
+                                    <div class="flex items-center">
+                                        <span class="w-6 h-6 {{ 'bg-yellow-500' if loop.index == 1 else 'bg-gray-500' if loop.index == 2 else 'bg-amber-800' if loop.index == 3 else '' }} rounded-full flex items-center justify-center text-xs font-bold mr-3">{{ loop.index }}</span>
+                                        <span>{{ leader.username }}</span>
+                                    </div>
+                                    <span class="font-bold">{{ leader.score }} очков</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+
+                <div class="block-background p-6" id="chat">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold flex items-center">
+                            <i class="fas fa-comments mr-2 text-blue-400"></i>Чат сообщества
+                        </h2>
+                        <button onclick="toggleChatFullscreen()" class="text-gray-400 hover:text-gray-300">
+                            <i class="fas fa-expand"></i>
+                        </button>
+                    </div>
+                    <div class="space-y-3 mb-4 h-64 overflow-y-auto" id="chat-messages-preview">
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="p-2 bg-gray-700 rounded">
+                                    <span class="font-bold">{{ message.username }}:</span>
+                                    <p class="text-sm text-gray-300">{{ message.message }}</p>
+                                    <span class="text-xs text-gray-400">{{ message.timestamp.strftime('%Y-%m-%d %H:%M') }}</span>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-sm text-gray-400">Чат пуст. Напишите первое сообщение!</p>
+                        {% endif %}
+                    </div>
+                    {% if current_user.is_authenticated %}
+                        <form id="chat-form-preview" class="chat-input-form">
+                            <input type="text" id="chat-input-preview" class="chat-input" placeholder="Введите сообщение..." required>
+                            <button type="submit" class="chat-send-btn">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div id="chat-fullscreen" class="chat-fullscreen" style="display: none;">
+            <div class="chat-fullscreen-header">
+                <button onclick="toggleChatFullscreen()" class="text-gray-400 hover:text-gray-300">
+                    <i class="fas fa-arrow-left"></i> Назад
+                </button>
+                <h2 class="text-xl font-semibold">Чат сообщества</h2>
+                <div></div>
+            </div>
+            <div class="chat-messages block-background p-4 rounded-lg" id="chat-messages-fullscreen">
+                {% for message in messages %}
+                    <div class="p-2 bg-gray-700 rounded mb-2">
+                        <span class="font-bold">{{ message.username }}:</span>
+                        <p class="text-sm text-gray-300">{{ message.message }}</p>
+                        <span class="text-xs text-gray-400">{{ message.timestamp.strftime('%Y-%m-%d %H:%M') }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+            {% if current_user.is_authenticated %}
+                <form id="chat-form-fullscreen" class="chat-input-form">
+                    <input type="text" id="chat-input-fullscreen" class="chat-input" placeholder="Введите сообщение..." required>
+                    <button type="submit" class="chat-send-btn">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </form>
+            {% endif %}
+        </div>
+        <div id="leaderboard-fullscreen" class="leaderboard-fullscreen" style="display: none;">
+            <div class="flex justify-between items-center mb-4">
+                <button onclick="toggleLeaderboardFullscreen()" class="text-gray-400 hover:text-gray-300">
+                    <i class="fas fa-arrow-left"></i> Назад
+                </button>
+                <h2 class="text-xl font-semibold">Таблица лидеров</h2>
+                <div></div>
+            </div>
+            <div class="space-y-3">
+                {% for leader in leaders %}
+                    <div class="flex items-center justify-between p-2 bg-gray-800 rounded">
+                        <div class="flex items-center">
+                            <span class="w-6 h-6 {{ 'bg-yellow-500' if loop.index == 1 else 'bg-gray-500' if loop.index == 2 else 'bg-amber-800' if loop.index == 3 else '' }} rounded-full flex items-center justify-center text-xs font-bold mr-3">{{ loop.index }}</span>
+                            <span>{{ leader.username }}</span>
+                        </div>
+                        <span class="font-bold">{{ leader.score }} очков</span>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        function setupChatForm(formId, inputId, messagesId) {
+            const chatForm = document.getElementById(formId);
+            const chatInput = document.getElementById(inputId);
+            const chatMessages = document.getElementById(messagesId);
+
+            socket.on('chat_message', (data) => {
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('p-2', 'bg-gray-700', 'rounded', 'mb-2');
+                messageElement.innerHTML = `
+                    <span class="font-bold">${data.username}:</span>
+                    <p class="text-sm text-gray-300">${data.message}</p>
+                    <span class="text-xs text-gray-400">${new Date(data.timestamp).toLocaleString()}</span>
+                `;
+                chatMessages.appendChild(messageElement);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            });
+
+            chatForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const message = chatInput.value.trim();
+                if (message) {
+                    socket.emit('send_message', { message });
+                    chatInput.value = '';
+                }
+            });
+        }
+
+        setupChatForm('chat-form-preview', 'chat-input-preview', 'chat-messages-preview');
+        setupChatForm('chat-form-fullscreen', 'chat-input-fullscreen', 'chat-messages-fullscreen');
+
+        function toggleChatFullscreen() {
+            const chatFullscreen = document.getElementById('chat-fullscreen');
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('main-content');
+            const filters = document.querySelector('.filters');
+            if (chatFullscreen.style.display === 'none') {
+                chatFullscreen.style.display = 'flex';
+                sidebar.style.display = 'none';
+                mainContent.style.display = 'none';
+                filters.style.display = 'none';
+            } else {
+                chatFullscreen.style.display = 'none';
+                sidebar.style.display = 'block';
+                mainContent.style.display = 'block';
+                filters.style.display = 'block';
+            }
+        }
+
+        function toggleLeaderboardFullscreen() {
+            const leaderboardFullscreen = document.getElementById('leaderboard-fullscreen');
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('main-content');
+            const filters = document.querySelector('.filters');
+            if (leaderboardFullscreen.style.display === 'none') {
+                leaderboardFullscreen.style.display = 'block';
+                sidebar.style.display = 'none';
+                mainContent.style.display = 'none';
+                filters.style.display = 'none';
+            } else {
+                leaderboardFullscreen.style.display = 'none';
+                sidebar.style.display = 'block';
+                mainContent.style.display = 'block';
+                filters.style.display = 'block';
+            }
+        }
+
+        document.getElementById('filter-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const style = document.getElementById('style-select').value || 'any';
+            fetch('/set_filter', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ style: style })
+            }).then(response => response.json())
+              .then(data => {
+                  if (data.status === 'success') {
+                      const currentPath = window.location.pathname;
+                      const difficultyMatch = currentPath.match(/\/play\/(easy|medium|hard)/);
+                      const difficulty = difficultyMatch ? difficultyMatch[1] : 'easy';
+                      window.location.href = `/play/${difficulty}?style=${encodeURIComponent(data.style)}`;
+                  } else {
+                  }
+              })
+              .catch(error => {
+              });
+        });
+
+        window.addEventListener('load', () => {
+            const styleSelect = document.getElementById('style-select');
+            styleSelect.value = 'any';
+        });
+    </script>
+</body>
+</html>
