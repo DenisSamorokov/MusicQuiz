@@ -18,7 +18,7 @@
 pip install -r requirements.txt
 ```
 
-## Запуск игры
+## Запуск сайта
 ```bash
 python app.py
 ```
