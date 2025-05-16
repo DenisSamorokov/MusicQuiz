@@ -15,7 +15,7 @@
 1. Клонируйте репозиторий
 2. Установите необходимые зависимости:
 ```bash
-pip instal requirements.txt
+pip install -r requirements.txt
 ```
 
 ## Запуск игры
