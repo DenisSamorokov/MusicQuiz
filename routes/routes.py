@@ -1,10 +1,10 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, make_response, Response
 from flask_login import login_user, login_required, logout_user, current_user
 from flask_socketio import emit
-from models.models import User, Message, db
+from models.models import User, Message, ScoreEvent, db
 from utils.track_utils import select_track_and_options
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
+from datetime import datetime, timedelta
 import requests
 import eventlet
 
@@ -20,10 +20,17 @@ def init_routes(app: Flask, socketio=None):
     @app.route('/')
     def index():
         leaders = User.query.order_by(User.score.desc()).limit(5).all()
+        time_threshold = datetime.utcnow() - timedelta(hours=24)
+        daily_leaders = db.session.query(
+            User.username,
+            db.func.sum(ScoreEvent.score).label('total_score')
+        ).join(ScoreEvent).filter(
+            ScoreEvent.timestamp >= time_threshold
+        ).group_by(User.id).order_by(db.func.sum(ScoreEvent.score).desc()).limit(5).all()
         messages = Message.query.order_by(Message.timestamp.desc()).limit(3).all()
         if 'selected_style' not in session:
             session['selected_style'] = 'any'
-        return render_template('index.html', leaders=leaders, messages=messages)
+        return render_template('index.html', leaders=leaders, daily_leaders=daily_leaders, messages=messages)
 
     @app.route('/play/<difficulty>', methods=['GET', 'POST'])
     @login_required
@@ -51,6 +58,13 @@ def init_routes(app: Flask, socketio=None):
             return redirect(url_for('index'))
 
         leaders = User.query.order_by(User.score.desc()).limit(5).all()
+        time_threshold = datetime.utcnow() - timedelta(hours=24)
+        daily_leaders = db.session.query(
+            User.username,
+            db.func.sum(ScoreEvent.score).label('total_score')
+        ).join(ScoreEvent).filter(
+            ScoreEvent.timestamp >= time_threshold
+        ).group_by(User.id).order_by(db.func.sum(ScoreEvent.score).desc()).limit(5).all()
         messages = Message.query.order_by(Message.timestamp.desc()).limit(3).all()
 
         try:
@@ -63,11 +77,11 @@ def init_routes(app: Flask, socketio=None):
                 session.modified = True
         except Exception as e:
             flash("Не удалось загрузить трек. Попробуйте снова.", "error")
-            return render_template('index.html', leaders=leaders, messages=messages)
+            return render_template('index.html', leaders=leaders, daily_leaders=daily_leaders, messages=messages)
 
         if not track or len(options) < 4:
             flash("Не удалось найти достаточно треков. Попробуйте другой уровень сложности или жанр.", "error")
-            return render_template('index.html', leaders=leaders, messages=messages)
+            return render_template('index.html', leaders=leaders, daily_leaders=daily_leaders, messages=messages)
 
         duration = {'easy': 30, 'medium': 20, 'hard': 10}.get(difficulty, 30)
         if request.method == 'POST':
@@ -79,6 +93,8 @@ def init_routes(app: Flask, socketio=None):
             if correct:
                 points = {'easy': 5, 'medium': 10, 'hard': 15}.get(difficulty, 5)
                 current_user.score += points
+                score_event = ScoreEvent(user_id=current_user.id, score=points)
+                db.session.add(score_event)
                 db.session.commit()
             return jsonify({
                 'correct': correct,
@@ -103,7 +119,7 @@ def init_routes(app: Flask, socketio=None):
 
         response = make_response(render_template('play.html', track=track_for_template, options=options_for_template,
                                                  difficulty=difficulty, duration=duration, style=style,
-                                                 leaders=leaders, messages=messages))
+                                                 leaders=leaders, daily_leaders=daily_leaders, messages=messages))
         response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
         return response
 
@@ -174,15 +190,29 @@ def init_routes(app: Flask, socketio=None):
     @app.route('/leaderboard')
     def leaderboard():
         leaders = User.query.order_by(User.score.desc()).limit(10).all()
+        time_threshold = datetime.utcnow() - timedelta(hours=24)
+        daily_leaders = db.session.query(
+            User.username,
+            db.func.sum(ScoreEvent.score).label('total_score')
+        ).join(ScoreEvent).filter(
+            ScoreEvent.timestamp >= time_threshold
+        ).group_by(User.id).order_by(db.func.sum(ScoreEvent.score).desc()).limit(10).all()
         messages = Message.query.order_by(Message.timestamp.desc()).limit(3).all()
-        return render_template('leaderboard.html', leaders=leaders, messages=messages)
+        return render_template('leaderboard.html', leaders=leaders, daily_leaders=daily_leaders, messages=messages)
 
     @app.route('/chat')
     @login_required
     def chat():
         leaders = User.query.order_by(User.score.desc()).limit(5).all()
+        time_threshold = datetime.utcnow() - timedelta(hours=24)
+        daily_leaders = db.session.query(
+            User.username,
+            db.func.sum(ScoreEvent.score).label('total_score')
+        ).join(ScoreEvent).filter(
+            ScoreEvent.timestamp >= time_threshold
+        ).group_by(User.id).order_by(db.func.sum(ScoreEvent.score).desc()).limit(5).all()
         messages = Message.query.order_by(Message.timestamp.desc()).all()
-        return render_template('chat.html', messages=messages, leaders=leaders)
+        return render_template('chat.html', messages=messages, leaders=leaders, daily_leaders=daily_leaders)
 
     @app.route('/login', methods=['GET', 'POST'])
     def login():

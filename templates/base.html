@@ -35,14 +35,14 @@
                     <div class="filter-group">
                         <label for="style-select" class="block mb-2">Жанр</label>
                         <select id="style-select" name="style" class="filter-select">
-                            <option value="any" selected>Любой</option>
-                            <option value="Pop">Pop</option>
-                            <option value="Rock">Rock</option>
-                            <option value="Rap_Hip Hop">Rap/Hip Hop</option>
-                            <option value="R_B">R&B</option>
-                            <option value="Dance">Dance</option>
-                            <option value="Electro">Electro</option>
-                            <option value="Soul _ Funk">Soul & Funk</option>
+                            <option value="any" {% if session['selected_style'] == 'any' %}selected{% endif %}>Любой</option>
+                            <option value="Pop" {% if session['selected_style'] == 'Pop' %}selected{% endif %}>Pop</option>
+                            <option value="Rock" {% if session['selected_style'] == 'Rock' %}selected{% endif %}>Rock</option>
+                            <option value="Rap_Hip Hop" {% if session['selected_style'] == 'Rap_Hip Hop' %}selected{% endif %}>Rap/Hip Hop</option>
+                            <option value="R_B" {% if session['selected_style'] == 'R_B' %}selected{% endif %}>R&B</option>
+                            <option value="Dance" {% if session['selected_style'] == 'Dance' %}selected{% endif %}>Dance</option>
+                            <option value="Electro" {% if session['selected_style'] == 'Electro' %}selected{% endif %}>Electro</option>
+                            <option value="Soul _ Funk" {% if session['selected_style'] == 'Soul _ Funk' %}selected{% endif %}>Soul & Funk</option>
                         </select>
                     </div>
                     <button type="submit" class="apply-btn">Применить фильтр</button>
@@ -52,6 +52,29 @@
                 {% block content %}{% endblock %}
             </div>
             <div class="sidebar" id="sidebar">
+                <div class="block-background p-6 mb-6" id="daily-leaderboard">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold flex items-center">
+                            <i class="fas fa-trophy mr-2 text-blue-400"></i>Топ за 24 часа
+                        </h2>
+                        <button onclick="toggleLeaderboardFullscreen()" class="text-gray-400 hover:text-gray-300">
+                            <i class="fas fa-expand"></i>
+                        </button>
+                    </div>
+                    <div class="space-y-3">
+                        {% for leader in daily_leaders %}
+                            <div class="flex items-center justify-between p-2 bg-gray-700 rounded">
+                                <div class="flex items-center">
+                                    <span class="w-6 h-6 {{ 'bg-yellow-500' if loop.index == 1 else 'bg-gray-500' if loop.index == 2 else 'bg-amber-800' if loop.index == 3 else '' }} rounded-full flex items-center justify-center text-xs font-bold mr-3">{{ loop.index }}</span>
+                                    <span>{{ leader.username }}</span>
+                                </div>
+                                <span class="font-bold">{{ leader.total_score }} очков</span>
+                            </div>
+                        {% else %}
+                            <p class="text-sm text-gray-400">Нет результатов за последние 24 часа</p>
+                        {% endfor %}
+                    </div>
+                </div>
                 {% if leaders %}
                     <div class="block-background p-6 mb-6" id="leaderboard">
                         <div class="flex justify-between items-center mb-4">
@@ -75,11 +98,12 @@
                         </div>
                     </div>
                 {% endif %}
-
                 <div class="block-background p-6" id="chat">
                     <div class="flex justify-between items-center mb-4">
                         <h2 class="text-xl font-semibold flex items-center">
-                            <i class="fas fa-comments mr-2 text-blue-400"></i>Чат сообщества
+                            <a href="{{ url_for('chat') }}" class="flex items-center">
+                                <i class="fas fa-comments mr-2 text-blue-400"></i>Чат сообщества
+                            </a>
                         </h2>
                         <button onclick="toggleChatFullscreen()" class="text-gray-400 hover:text-gray-300">
                             <i class="fas fa-expand"></i>
@@ -143,16 +167,35 @@
                 <h2 class="text-xl font-semibold">Таблица лидеров</h2>
                 <div></div>
             </div>
-            <div class="space-y-3">
-                {% for leader in leaders %}
-                    <div class="flex items-center justify-between p-2 bg-gray-800 rounded">
-                        <div class="flex items-center">
-                            <span class="w-6 h-6 {{ 'bg-yellow-500' if loop.index == 1 else 'bg-gray-500' if loop.index == 2 else 'bg-amber-800' if loop.index == 3 else '' }} rounded-full flex items-center justify-center text-xs font-bold mr-3">{{ loop.index }}</span>
-                            <span>{{ leader.username }}</span>
+            <div class="block-background p-6 mb-6">
+                <h3 class="text-lg font-semibold mb-4">Топ за 24 часа</h3>
+                <div class="space-y-3">
+                    {% for leader in daily_leaders %}
+                        <div class="flex items-center justify-between p-2 bg-gray-700 rounded">
+                            <div class="flex items-center">
+                                <span class="w-6 h-6 {{ 'bg-yellow-500' if loop.index == 1 else 'bg-gray-500' if loop.index == 2 else 'bg-amber-800' if loop.index == 3 else '' }} rounded-full flex items-center justify-center text-xs font-bold mr-3">{{ loop.index }}</span>
+                                <span>{{ leader.username }}</span>
+                            </div>
+                            <span class="font-bold">{{ leader.total_score }} очков</span>
                         </div>
-                        <span class="font-bold">{{ leader.score }} очков</span>
-                    </div>
-                {% endfor %}
+                    {% else %}
+                        <p class="text-sm text-gray-400">Нет результатов за последние 24 часа</p>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="block-background p-6">
+                <h3 class="text-lg font-semibold mb-4">Общий топ</h3>
+                <div class="space-y-3">
+                    {% for leader in leaders %}
+                        <div class="flex items-center justify-between p-2 bg-gray-800 rounded">
+                            <div class="flex items-center">
+                                <span class="w-6 h-6 {{ 'bg-yellow-500' if loop.index == 1 else 'bg-gray-500' if loop.index == 2 else 'bg-amber-800' if loop.index == 3 else '' }} rounded-full flex items-center justify-center text-xs font-bold mr-3">{{ loop.index }}</span>
+                                <span>{{ leader.username }}</span>
+                            </div>
+                            <span class="font-bold">{{ leader.score }} очков</span>
+                        </div>
+                    {% endfor %}
+                </div>
             </div>
         </div>
     </div>
@@ -241,16 +284,14 @@
                       const difficultyMatch = currentPath.match(/\/play\/(easy|medium|hard)/);
                       const difficulty = difficultyMatch ? difficultyMatch[1] : 'easy';
                       window.location.href = `/play/${difficulty}?style=${encodeURIComponent(data.style)}`;
-                  } else {
                   }
               })
-              .catch(error => {
-              });
+              .catch(error => {});
         });
 
         window.addEventListener('load', () => {
             const styleSelect = document.getElementById('style-select');
-            styleSelect.value = 'any';
+            styleSelect.value = '{{ session["selected_style"] or "any" }}';
         });
     </script>
 </body>
