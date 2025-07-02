@@ -4,16 +4,16 @@
 
 {% block content %}
     <div class="main-content text-center">
-        <div class="block-background p-6 mb-6">
-            <h2 class="text-xl font-semibold mb-4">Выберите сложность</h2>
-            <div class="flex justify-center space-x-4">
-                <a href="{{ url_for('play', difficulty='easy', style=session['selected_style']) }}" class="px-6 py-3 rounded-lg bg-green-600 hover:bg-green-700 text-white text-center">
+        <div class="block-background p-4 sm:p-6 mb-6">
+            <h2 class="text-lg sm:text-xl font-semibold mb-4">Выберите сложность</h2>
+            <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+                <a href="{{ url_for('play', difficulty='easy', style=session['selected_style']) }}" class="px-4 py-2 sm:px-6 sm:py-3 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm sm:text-base text-center">
                     Легко <span class="ml-2">+5 очков</span>
                 </a>
-                <a href="{{ url_for('play', difficulty='medium', style=session['selected_style']) }}" class="px-6 py-3 rounded-lg bg-yellow-600 hover:bg-yellow-700 text-white text-center">
+                <a href="{{ url_for('play', difficulty='medium', style=session['selected_style']) }}" class="px-4 py-2 sm:px-6 sm:py-3 rounded-lg bg-yellow-600 hover:bg-yellow-700 text-white text-sm sm:text-base text-center">
                     Средне <span class="ml-2">+10 очков</span>
                 </a>
-                <a href="{{ url_for('play', difficulty='hard', style=session['selected_style']) }}" class="px-6 py-3 rounded-lg bg-red-600 hover:bg-red-700 text-white text-center">
+                <a href="{{ url_for('play', difficulty='hard', style=session['selected_style']) }}" class="px-4 py-2 sm:px-6 sm:py-3 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm sm:text-base text-center">
                     Сложно <span class="ml-2">+15 очков</span>
                 </a>
             </div>
@@ -21,13 +21,13 @@
 
         <div id="loading" class="flex justify-center items-center mb-4" style="display: none;">
             <div class="loader"></div>
-            <p class="ml-2 text-gray-400">Загрузка...</p>
+            <p class="ml-2 text-gray-400 text-sm">Загрузка...</p>
         </div>
 
         {% if track and options %}
-        <div class="block-background p-6 mb-8">
-            <div class="flex justify-center items-center mb-4">
-                <h2 class="text-xl font-semibold mr-4">Угадайте песню</h2>
+        <div class="block-background p-4 sm:p-6 mb-6">
+            <div class="flex flex-col sm:flex-row justify-center items-center mb-4">
+                <h2 class="text-lg sm:text-xl font-semibold mb-2 sm:mb-0 sm:mr-4">Угадайте песню</h2>
                 <div class="flex items-center">
                     <span id="timer" class="text-sm bg-gray-800 px-3 py-1 rounded">
                         {{ duration }}с
@@ -36,10 +36,10 @@
                 </div>
             </div>
 
-            <div class="custom-player mx-auto w-64">
+            <div class="custom-player mx-auto w-full max-w-xs sm:w-64">
                 <audio id="audio-player" src="{{ url_for('proxy', url=track.preview_url) }}" preload="auto"></audio>
-                <button id="play-btn" class="play-btn">
-                    <i class="fas fa-play"></i>
+                <button id="play-btn" class="play-btn h-12 w-12">
+                    <i class="fas fa-play text-xl sm:text-2xl"></i>
                 </button>
                 <div id="equalizer" class="equalizer" style="display: none;">
                     <div class="bar"></div>
@@ -53,55 +53,56 @@
                     <span class="ml-2 text-sm text-gray-400">Загрузка...</span>
                 </div>
             </div>
-            <p id="audio-error" style="color: red; display: none;">Не удалось воспроизвести аудио. <a href="{{ url_for('play', difficulty=difficulty, style=style) }}">Попробуйте снова</a>.</p>
+            <p id="audio-error" class="text-red-400 text-sm mt-2" style="display: none;">
+                Не удалось воспроизвести аудио. <a href="{{ url_for('play', difficulty=difficulty, style=style) }}" class="text-blue-400 hover:text-blue-300">Попробуйте снова</a>.
+            </p>
         </div>
 
         <form id="guess-form" method="POST">
             <input type="hidden" name="track_id" value="{{ track.id }}">
             <input type="hidden" name="track_title" value="{{ track.title }}">
             <input type="hidden" name="track_artist" value="{{ track.artist }}">
-            <div class="block-background p-6 rounded-lg">
-                <div class="grid grid-cols-2 gap-4 max-w-lg mx-auto">
+            <div class="block-background p-4 sm:p-6 rounded-lg">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-full sm:max-w-lg mx-auto">
                     {% for option in options %}
-                        <label class="option-card p-4 rounded-lg cursor-pointer">
+                        <label class="option-card p-4 rounded-lg cursor-pointer min-h-[60px]">
                             <input type="radio" name="guess" value="{{ option.id }}" class="hidden" required>
                             <div class="flex items-center">
                                 <div class="w-10 h-10 bg-gray-700 rounded flex items-center justify-center mr-3">
-                                    <span class="font-bold">{{ loop.index | replace('1', 'A') | replace('2', 'B') | replace('3', 'C') | replace('4', 'D') }}</span>
+                                    <span class="font-bold text-sm">{{ loop.index | replace('1', 'A') | replace('2', 'B') | replace('3', 'C') | replace('4', 'D') }}</span>
                                 </div>
                                 <div>
-                                    <h3 class="font-medium">{{ option.title }}</h3>
-                                    <p class="text-sm text-gray-400">{{ option.artist }}</p>
+                                    <h3 class="font-medium text-sm sm:text-base">{{ option.title }}</h3>
+                                    <p class="text-xs sm:text-sm text-gray-400">{{ option.artist }}</p>
                                 </div>
                             </div>
                         </label>
                     {% endfor %}
                 </div>
-                <button type="submit" class="px-6 py-3 mt-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white">Ответить</button>
             </div>
         </form>
 
-        <div id="result-modal" class="modal" style="display: none;">
-            <div class="modal-content block-background">
-                <h2 id="result-title" class="text-xl font-semibold mb-4"></h2>
-                <p id="result-answer" class="mb-4"></p>
+        <div id="result-modal" class="modal hidden">
+            <div class="modal-content block-background p-4 sm:p-6 max-w-full sm:max-w-md">
+                <h2 id="result-title" class="text-lg sm:text-xl font-semibold mb-4"></h2>
+                <p id="result-answer" class="mb-4 text-sm sm:text-base"></p>
                 <div id="result-loading" class="flex justify-center items-center mb-4" style="display: none;">
                     <div class="loader"></div>
-                    <p class="ml-2 text-gray-400">Обработка...</p>
+                    <p class="ml-2 text-gray-400 text-sm">Обработка...</p>
                 </div>
                 <div class="space-x-4">
-                    <a id="next-button" href="{{ url_for('play', difficulty=difficulty, style=style) }}" class="px-6 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-center">
+                    <a id="next-button" href="{{ url_for('play', difficulty=difficulty, style=style) }}" class="px-4 py-2 sm:px-6 sm:py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm sm:text-base text-center">
                         Дальше
                     </a>
                 </div>
             </div>
         </div>
 
-        <div id="timeout-modal" class="modal" style="display: none;">
-            <div class="modal-content block-background">
-                <h2 class="text-xl font-semibold mb-4">Время истекло!</h2>
-                <p class="mb-4">Ответ: <strong>{{ track.title }}</strong> от {{ track.artist }}</p>
-                <a href="{{ url_for('play', difficulty=difficulty, style=style) }}" class="px-6 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-center">
+        <div id="timeout-modal" class="modal hidden">
+            <div class="modal-content block-background p-4 sm:p-6 max-w-full sm:max-w-md">
+                <h2 class="text-lg sm:text-xl font-semibold mb-4">Время истекло!</h2>
+                <p class="mb-4 text-sm sm:text-base">Ответ: <strong>{{ track.title }}</strong> от {{ track.artist }}</p>
+                <a href="{{ url_for('play', difficulty=difficulty, style=style) }}" class="px-4 py-2 sm:px-6 sm:py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm sm:text-base text-center">
                     Дальше
                 </a>
             </div>
@@ -136,8 +137,8 @@
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('loading').style.display = 'flex';
             sessionStorage.setItem('selected_style', '{{ style }}');
-            resultModal.style.display = 'none';
-            timeoutModal.style.display = 'none';
+            resultModal.classList.add('hidden');
+            timeoutModal.classList.add('hidden');
             if (timer) {
                 clearInterval(timer);
                 timer = null;
@@ -168,7 +169,7 @@
                         timer = null;
                         audio.pause();
                         equalizer.style.display = 'none';
-                        timeoutModal.style.display = 'flex';
+                        timeoutModal.classList.remove('hidden');
                     }
                 }, 1000);
             }
@@ -183,8 +184,7 @@
                     }
                     nextTrack = data;
                 })
-                .catch(error => {
-                });
+                .catch(error => {});
         }
 
         function tryPlayAudio() {
@@ -205,7 +205,7 @@
                 }
             }, 3000);
             audio.play().then(() => {
-                playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                playBtn.innerHTML = '<i class="fas fa-pause text-xl sm:text-2xl"></i>';
                 errorElement.style.display = 'none';
                 equalizer.style.display = 'block';
                 audioLoading.style.display = 'none';
@@ -226,7 +226,7 @@
                 tryPlayAudio();
             } else {
                 audio.pause();
-                playBtn.innerHTML = '<i class="fas fa-play"></i>';
+                playBtn.innerHTML = '<i class="fas fa-play text-xl sm:text-2xl"></i>';
                 equalizer.style.display = 'none';
                 audioLoading.style.display = 'none';
                 clearTimeout(equalizerTimeout);
@@ -237,7 +237,7 @@
             audioLoading.style.display = 'none';
             if (!audio.paused) {
                 equalizer.style.display = 'block';
-                playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                playBtn.innerHTML = '<i class="fas fa-pause text-xl sm:text-2xl"></i>';
             }
         });
 
@@ -245,7 +245,7 @@
             if (audio.currentTime > duration) {
                 audio.pause();
                 audio.currentTime = 0;
-                playBtn.innerHTML = '<i class="fas fa-play"></i>';
+                playBtn.innerHTML = '<i class="fas fa-play text-xl sm:text-2xl"></i>';
                 equalizer.style.display = 'none';
                 audioLoading.style.display = 'none';
                 clearTimeout(equalizerTimeout);
@@ -253,7 +253,7 @@
         });
 
         audio.addEventListener('ended', () => {
-            playBtn.innerHTML = '<i class="fas fa-play"></i>';
+            playBtn.innerHTML = '<i class="fas fa-play text-xl sm:text-2xl"></i>';
             equalizer.style.display = 'none';
             audioLoading.style.display = 'none';
             clearTimeout(equalizerTimeout);
@@ -285,7 +285,7 @@
                 clearTimeout(equalizerTimeout);
 
                 resultLoading.style.display = 'flex';
-                resultModal.style.display = 'flex';
+                resultModal.classList.remove('hidden');
 
                 document.querySelectorAll('.option-card').forEach(card => {
                     card.classList.remove('selected');
@@ -305,7 +305,7 @@
                 .then(data => {
                     resultLoading.style.display = 'none';
                     resultTitle.textContent = data.correct ? 'Правильно!' : 'Неправильно';
-                    resultTitle.className = `text-xl font-semibold mb-4 ${data.correct ? 'correct' : ''}`;
+                    resultTitle.className = `text-lg sm:text-xl font-semibold mb-4 ${data.correct ? 'correct' : ''}`;
                     resultAnswer.textContent = `Ответ: ${data.track.title} от ${data.track.artist}`;
                     if (nextTrack) {
                         document.getElementById('next-button').href = '#';
@@ -319,7 +319,7 @@
                     if (error.name === 'AbortError') {
                     } else {
                         resultLoading.style.display = 'none';
-                        resultModal.style.display = 'none';
+                        resultModal.classList.add('hidden');
                     }
                     currentFetch = null;
                 });
