@@ -67,11 +67,25 @@ def init_routes(app: Flask, socketio=None):
         ).group_by(User.id).order_by(db.func.sum(ScoreEvent.score).desc()).limit(5).all()
         messages = Message.query.order_by(Message.timestamp.desc()).limit(3).all()
 
+        if request.method == 'POST':
+            guess = request.form.get('guess')
+            track_id = request.form.get('track_id')
+            if guess and track_id:
+                correct = str(guess) == str(track_id)
+                if correct:
+                    points = {'easy': 5, 'medium': 10, 'hard': 15}.get(difficulty, 5)
+                    current_user.score += points
+                    score_event = ScoreEvent(user_id=current_user.id, score=points)
+                    db.session.add(score_event)
+                    db.session.commit()
+                return jsonify({'status': 'success'})
+            return jsonify({'error': 'Неверные данные'}), 400
+
         try:
             session_data = dict(session)
             with app.app_context():
                 track, options, updated_session_data = eventlet.spawn(
-                    select_track_and_options, session_data, difficulty, style=style
+                    select_track_and_options, session_data, difficulty, style
                 ).wait()
                 session.update(updated_session_data)
                 session.modified = True
@@ -84,23 +98,6 @@ def init_routes(app: Flask, socketio=None):
             return render_template('index.html', leaders=leaders, daily_leaders=daily_leaders, messages=messages)
 
         duration = {'easy': 30, 'medium': 20, 'hard': 10}.get(difficulty, 30)
-        if request.method == 'POST':
-            guess = request.form.get('guess')
-            track_id = request.form.get('track_id')
-            track_title = request.form.get('track_title')
-            track_artist = request.form.get('track_artist')
-            correct = str(guess) == str(track_id)
-            if correct:
-                points = {'easy': 5, 'medium': 10, 'hard': 15}.get(difficulty, 5)
-                current_user.score += points
-                score_event = ScoreEvent(user_id=current_user.id, score=points)
-                db.session.add(score_event)
-                db.session.commit()
-            return jsonify({
-                'correct': correct,
-                'track': {'title': track_title, 'artist': track_artist}
-            })
-
         track_for_template = {
             'id': track['id'],
             'title': track['title'],

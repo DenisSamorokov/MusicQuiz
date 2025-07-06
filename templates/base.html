@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}{% endblock %} - Music Quiz</title>
+    <title>{% block title %}{% endblock %} - MusicQuiz</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
@@ -17,7 +17,7 @@
                 </button>
                 <a href="{{ url_for('index') }}">
                     <h1 class="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 bg-clip-text text-transparent">
-                        <i class="fas fa-music mr-2"></i>Music Quiz
+                        <i class="fas fa-music mr-2"></i>MusicQuiz
                     </h1>
                 </a>
             </div>
@@ -56,9 +56,9 @@
             <div class="main-content flex-1 max-w-full sm:max-w-2xl mb-4 sm:mb-0" id="main-content">
                 {% block content %}{% endblock %}
             </div>
-            <div class="sidebar block-background p-4 sm:p-6 sm:w-72 hidden sm:block" id="sidebar">
+            <div class="sidebar sm:w-72 hidden sm:block" id="sidebar">
                 {% if daily_leaders %}
-                    <div class="mb-6" id="daily-leaderboard">
+                    <div class="block-background p-4 sm:p-6 mb-4 sm:mb-6" id="daily-leaderboard">
                         <div class="flex justify-between items-center mb-4">
                             <h2 class="text-lg sm:text-xl font-semibold flex items-center">
                                 <i class="fas fa-trophy mr-2 text-blue-400"></i>Топ за 24 часа
@@ -83,7 +83,7 @@
                     </div>
                 {% endif %}
                 {% if leaders %}
-                    <div class="mb-6" id="leaderboard">
+                    <div class="block-background p-4 sm:p-6 mb-4 sm:mb-6" id="leaderboard">
                         <div class="flex justify-between items-center mb-4">
                             <h2 class="text-lg sm:text-xl font-semibold flex items-center">
                                 <i class="fas fa-trophy mr-2 text-yellow-400"></i>Таблица лидеров
@@ -105,7 +105,7 @@
                         </div>
                     </div>
                 {% endif %}
-                <div id="chat">
+                <div class="block-background p-4 sm:p-6" id="chat">
                     <div class="flex justify-between items-center mb-4">
                         <h2 class="text-lg sm:text-xl font-semibold flex items-center">
                             <a href="{{ url_for('chat') }}" class="flex items-center">
@@ -232,7 +232,7 @@
                 e.preventDefault();
                 const message = chatInput.value.trim();
                 if (message) {
-                    socket.emit('send_message', { message });
+                    socket.emit('send_event', { message });
                     chatInput.value = '';
                 }
             });
