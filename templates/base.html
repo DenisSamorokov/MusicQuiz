@@ -8,8 +8,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body>
-    <div class="container">
+<body class="relative overflow-hidden">
+    <!-- Анимированный фон -->
+    <div class="animated-bg absolute inset-0 z-0"></div>
+    <div class="container relative z-10">
         <header class="header flex justify-between items-center mb-6 sm:mb-8">
             <div class="flex items-center">
                 <button id="sidebar-toggle" class="sm:hidden text-gray-400 hover:text-gray-300 mr-4">
@@ -22,24 +24,28 @@
                 </a>
             </div>
             <div class="flex items-center space-x-4">
+                <!-- Проверка авторизации -->
                 {% if current_user.is_authenticated %}
-                    <span class="text-sm">{{ current_user.username }}</span>
-                    <a href="{{ url_for('logout') }}" class="text-red-400 hover:text-red-300">
+                    <span class="text-sm font-medium text-gray-200">{{ current_user.username }}</span>
+                    <a href="{{ url_for('logout') }}" class="text-red-400 hover:text-red-300 transition-colors duration-200">
                         <i class="fas fa-sign-out-alt"></i>
                     </a>
                 {% else %}
-                    <a href="{{ url_for('login') }}" class="text-blue-400 hover:text-blue-300">Войти</a>
-                    <a href="{{ url_for('register') }}" class="text-blue-400 hover:text-blue-300">Регистрация</a>
+                    <a href="{{ url_for('login') }}" class="text-blue-400 hover:text-blue-300 transition-colors duration-200">Войти</a>
+                    <a href="{{ url_for('register') }}" class="text-blue-400 hover:text-blue-300 transition-colors duration-200">Регистрация</a>
                 {% endif %}
+                <!-- Конец проверки авторизации -->
             </div>
         </header>
         <div class="content-wrapper flex flex-col sm:flex-row sm:space-x-6">
-            <div class="filters block-background p-4 sm:p-6 mb-4 sm:mb-0 sm:w-72 hidden sm:block" id="filters">
-                <h2 class="text-lg sm:text-xl font-semibold mb-4">Фильтры</h2>
+            <div class="filters block-background p-4 sm:p-6 mb-4 sm:mb-0 sm:w-72 hidden sm:block animate-slide-in" id="filters">
+                <h2 class="text-lg sm:text-xl font-semibold mb-4 flex items-center">
+                    <i class="fas fa-filter mr-2 text-blue-400"></i>Фильтры
+                </h2>
                 <form id="filter-form" method="POST" action="/set_filter">
                     <div class="filter-group">
                         <label for="style-select" class="block mb-2 text-sm sm:text-base">Жанр</label>
-                        <select id="style-select" name="style" class="filter-select w-full text-sm sm:text-base">
+                        <select id="style-select" name="style" class="filter-select w-full text-sm sm:text-base transition-colors duration-200">
                             <option value="any" {% if session['selected_style'] == 'any' %}selected{% endif %}>Любой</option>
                             <option value="Pop" {% if session['selected_style'] == 'Pop' %}selected{% endif %}>Pop</option>
                             <option value="Rock" {% if session['selected_style'] == 'Rock' %}selected{% endif %}>Rock</option>
@@ -50,26 +56,27 @@
                             <option value="Soul _ Funk" {% if session['selected_style'] == 'Soul _ Funk' %}selected{% endif %}>Soul & Funk</option>
                         </select>
                     </div>
-                    <button type="submit" class="apply-btn w-full mt-2 text-sm sm:text-base" aria-label="Применить фильтр">Применить фильтр</button>
+                    <button type="submit" class="apply-btn w-full mt-2 text-sm sm:text-base bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 transition-all duration-200">Применить фильтр</button>
                 </form>
             </div>
-            <div class="main-content flex-1 max-w-full sm:max-w-2xl mb-4 sm:mb-0" id="main-content">
+            <div class="main-content flex-1 max-w-full sm:max-w-2xl mb-4 sm:mb-0 animate-slide-in" id="main-content">
                 {% block content %}{% endblock %}
             </div>
-            <div class="sidebar sm:w-72 hidden sm:block" id="sidebar">
+            <div class="sidebar sm:w-72 hidden sm:block animate-slide-in" id="sidebar">
+                <!-- Лидерборд за 24 часа -->
                 {% if daily_leaders %}
-                    <div class="block-background p-4 sm:p-6 mb-4 sm:mb-6" id="daily-leaderboard">
+                    <div class="block-background p-4 sm:p-6 mb-4 sm:mb-6 animate-slide-in" id="daily-leaderboard">
                         <div class="flex justify-between items-center mb-4">
                             <h2 class="text-lg sm:text-xl font-semibold flex items-center">
                                 <i class="fas fa-trophy mr-2 text-blue-400"></i>Топ за 24 часа
                             </h2>
-                            <button onclick="toggleLeaderboardFullscreen()" class="text-gray-400 hover:text-gray-300">
+                            <button onclick="toggleLeaderboardFullscreen()" class="text-gray-400 hover:text-gray-300 transition-colors duration-200">
                                 <i class="fas fa-expand"></i>
                             </button>
                         </div>
                         <div class="space-y-3">
                             {% for leader in daily_leaders %}
-                                <div class="flex items-center justify-between p-2 bg-gray-700 rounded text-sm sm:text-base">
+                                <div class="flex items-center justify-between p-2 bg-gray-700 rounded text-sm sm:text-base transition-transform duration-200 hover:scale-105">
                                     <div class="flex items-center">
                                         <span class="w-6 h-6 {{ 'bg-yellow-500' if loop.index == 1 else 'bg-gray-500' if loop.index == 2 else 'bg-amber-800' if loop.index == 3 else '' }} rounded-full flex items-center justify-center text-xs font-bold mr-3">{{ loop.index }}</span>
                                         <span>{{ leader.username }}</span>
@@ -82,19 +89,21 @@
                         </div>
                     </div>
                 {% endif %}
+                <!-- Конец лидерборда за 24 часа -->
+                <!-- Общий лидерборд -->
                 {% if leaders %}
-                    <div class="block-background p-4 sm:p-6 mb-4 sm:mb-6" id="leaderboard">
+                    <div class="block-background p-4 sm:p-6 mb-4 sm:mb-6 animate-slide-in" id="leaderboard">
                         <div class="flex justify-between items-center mb-4">
                             <h2 class="text-lg sm:text-xl font-semibold flex items-center">
                                 <i class="fas fa-trophy mr-2 text-yellow-400"></i>Таблица лидеров
                             </h2>
-                            <button onclick="toggleLeaderboardFullscreen()" class="text-gray-400 hover:text-gray-300">
+                            <button onclick="toggleLeaderboardFullscreen()" class="text-gray-400 hover:text-gray-300 transition-colors duration-200">
                                 <i class="fas fa-expand"></i>
                             </button>
                         </div>
                         <div class="space-y-3">
                             {% for leader in leaders %}
-                                <div class="flex items-center justify-between p-2 bg-gray-700 rounded text-sm sm:text-base">
+                                <div class="flex items-center justify-between p-2 bg-gray-700 rounded text-sm sm:text-base transition-transform duration-200 hover:scale-105">
                                     <div class="flex items-center">
                                         <span class="w-6 h-6 {{ 'bg-yellow-500' if loop.index == 1 else 'bg-gray-500' if loop.index == 2 else 'bg-amber-800' if loop.index == 3 else '' }} rounded-full flex items-center justify-center text-xs font-bold mr-3">{{ loop.index }}</span>
                                         <span>{{ leader.username }}</span>
@@ -105,103 +114,122 @@
                         </div>
                     </div>
                 {% endif %}
-                <div class="block-background p-4 sm:p-6" id="chat">
+                <!-- Конец общего лидерборда -->
+                <div class="block-background p-4 sm:p-6 animate-slide-in" id="chat">
                     <div class="flex justify-between items-center mb-4">
                         <h2 class="text-lg sm:text-xl font-semibold flex items-center">
                             <a href="{{ url_for('chat') }}" class="flex items-center">
                                 <i class="fas fa-comments mr-2 text-blue-400"></i>Чат сообщества
                             </a>
                         </h2>
-                        <button onclick="toggleChatFullscreen()" class="text-gray-400 hover:text-gray-300">
+                        <button onclick="toggleChatFullscreen()" class="text-gray-400 hover:text-gray-300 transition-colors duration-200">
                             <i class="fas fa-expand"></i>
                         </button>
                     </div>
                     <div class="space-y-3 mb-4 h-48 sm:h-64 overflow-y-auto" id="chat-messages-preview">
+                        <!-- Чат сообщения -->
                         {% if messages %}
                             {% for message in messages %}
-                                <div class="p-2 bg-gray-700 rounded text-sm">
+                                <div class="p-2 bg-gray-700 rounded text-sm transition-transform duration-200 hover:scale-105">
                                     <span class="font-bold">{{ message.username }}:</span>
                                     <p class="text-sm text-gray-300">{{ message.message }}</p>
                                     <span class="text-xs text-gray-400">{{ message.timestamp.strftime('%Y-%m-%d %H:%M') }}</span>
                                 </div>
+                            {% else %}
+                                <p class="text-sm text-gray-400">Чат пуст. Напишите первое сообщение!</p>
                             {% endfor %}
-                        {% else %}
-                            <p class="text-sm text-gray-400">Чат пуст. Напишите первое сообщение!</p>
                         {% endif %}
+                        <!-- Конец чат сообщений -->
                     </div>
+                    <!-- Форма чата -->
                     {% if current_user.is_authenticated %}
                         <form id="chat-form-preview" class="chat-input-form">
                             <input type="text" id="chat-input-preview" class="chat-input text-sm" placeholder="Введите сообщение..." required>
-                            <button type="submit" class="chat-send-btn">
+                            <button type="submit" class="chat-send-btn bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
                                 <i class="fas fa-paper-plane"></i>
                             </button>
                         </form>
                     {% endif %}
+                    <!-- Конец формы чата -->
                 </div>
             </div>
-        </div>
-        <div id="chat-fullscreen" class="chat-fullscreen hidden flex-col p-4">
-            <div class="chat-fullscreen-header flex justify-between items-center mb-4">
-                <button onclick="toggleChatFullscreen()" class="text-gray-400 hover:text-gray-300">
-                    <i class="fas fa-arrow-left"></i> Назад
-                </button>
-                <h2 class="text-lg sm:text-xl font-semibold">Чат сообщества</h2>
-                <div></div>
-            </div>
-            <div class="chat-messages block-background p-4 rounded-lg flex-1 overflow-y-auto" id="chat-messages-fullscreen">
-                {% for message in messages %}
-                    <div class="p-2 bg-gray-700 rounded mb-2 text-sm">
-                        <span class="font-bold">{{ message.username }}:</span>
-                        <p class="text-sm text-gray-300">{{ message.message }}</p>
-                        <span class="text-xs text-gray-400">{{ message.timestamp.strftime('%Y-%m-%d %H:%M') }}</span>
-                    </div>
-                {% endfor %}
-            </div>
-            {% if current_user.is_authenticated %}
-                <form id="chat-form-fullscreen" class="chat-input-form mt-4">
-                    <input type="text" id="chat-input-fullscreen" class="chat-input text-sm" placeholder="Введите сообщение..." required>
-                    <button type="submit" class="chat-send-btn">
-                        <i class="fas fa-paper-plane"></i>
+            <div id="chat-fullscreen" class="chat-fullscreen hidden flex-col p-4">
+                <div class="chat-fullscreen-header flex justify-between items-center mb-4">
+                    <button onclick="toggleChatFullscreen()" class="text-gray-400 hover:text-gray-300 transition-colors duration-200">
+                        <i class="fas fa-arrow-left"></i> Назад
                     </button>
-                </form>
-            {% endif %}
-        </div>
-        <div id="leaderboard-fullscreen" class="leaderboard-fullscreen hidden p-4">
-            <div class="flex justify-between items-center mb-4">
-                <button onclick="toggleLeaderboardFullscreen()" class="text-gray-400 hover:text-gray-300">
-                    <i class="fas fa-arrow-left"></i> Назад
-                </button>
-                <h2 class="text-lg sm:text-xl font-semibold">Таблица лидеров</h2>
-                <div></div>
-            </div>
-            <div class="block-background p-4 rounded-lg mb-4">
-                <h3 class="text-base sm:text-lg font-semibold mb-4">Топ за 24 часа</h3>
-                <div class="space-y-3">
-                    {% for leader in daily_leaders %}
-                        <div class="flex items-center justify-between p-2 bg-gray-700 rounded text-sm">
-                            <div class="flex items-center">
-                                <span class="w-6 h-6 {{ 'bg-yellow-500' if loop.index == 1 else 'bg-gray-500' if loop.index == 2 else 'bg-amber-800' if loop.index == 3 else '' }} rounded-full flex items-center justify-center text-xs font-bold mr-3">{{ loop.index }}</span>
-                                <span>{{ leader.username }}</span>
-                            </div>
-                            <span class="font-bold">{{ leader.total_score }} очков</span>
-                        </div>
-                    {% else %}
-                        <p class="text-sm text-gray-400">Нет результатов за последние 24 часа</p>
-                    {% endfor %}
+                    <h2 class="text-lg sm:text-xl font-semibold">Чат сообщества</h2>
+                    <div></div>
                 </div>
-            </div>
-            <div class="block-background p-4 rounded-lg">
-                <h3 class="text-base sm:text-lg font-semibold mb-4">Общий топ</h3>
-                <div class="space-y-3">
-                    {% for leader in leaders %}
-                        <div class="flex items-center justify-between p-2 bg-gray-800 rounded text-sm">
-                            <div class="flex items-center">
-                                <span class="w-6 h-6 {{ 'bg-yellow-500' if loop.index == 1 else 'bg-gray-500' if loop.index == 2 else 'bg-amber-800' if loop.index == 3 else '' }} rounded-full flex items-center justify-center text-xs font-bold mr-3">{{ loop.index }}</span>
-                                <span>{{ leader.username }}</span>
+                <div class="chat-messages block-background p-4 rounded-lg flex-1 overflow-y-auto animate-slide-in" id="chat-messages-fullscreen">
+                    <!-- Чат сообщения в полноэкранном режиме -->
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="p-2 bg-gray-700 rounded mb-2 text-sm transition-transform duration-200 hover:scale-105">
+                                <span class="font-bold">{{ message.username }}:</span>
+                                <p class="text-sm text-gray-300">{{ message.message }}</p>
+                                <span class="text-xs text-gray-400">{{ message.timestamp.strftime('%Y-%m-%d %H:%M') }}</span>
                             </div>
-                            <span class="font-bold">{{ leader.score }} очков</span>
-                        </div>
-                    {% endfor %}
+                        {% endfor %}
+                    {% endif %}
+                    <!-- Конец чат сообщений -->
+                </div>
+                <!-- Форма чата в полноэкранном режиме -->
+                {% if current_user.is_authenticated %}
+                    <form id="chat-form-fullscreen" class="chat-input-form mt-4">
+                        <input type="text" id="chat-input-fullscreen" class="chat-input text-sm" placeholder="Введите сообщение..." required>
+                        <button type="submit" class="chat-send-btn bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </form>
+                {% endif %}
+                <!-- Конец формы чата -->
+            </div>
+            <div id="leaderboard-fullscreen" class="leaderboard-fullscreen hidden p-4">
+                <div class="flex justify-between items-center mb-4">
+                    <button onclick="toggleLeaderboardFullscreen()" class="text-gray-400 hover:text-gray-300 transition-colors duration-200">
+                        <i class="fas fa-arrow-left"></i> Назад
+                    </button>
+                    <h2 class="text-lg sm:text-xl font-semibold">Таблица лидеров</h2>
+                    <div></div>
+                </div>
+                <div class="block-background p-4 rounded-lg mb-4 animate-slide-in">
+                    <h3 class="text-base sm:text-lg font-semibold mb-4">Топ за 24 часа</h3>
+                    <div class="space-y-3">
+                        <!-- Лидерборд за 24 часа -->
+                        {% if daily_leaders %}
+                            {% for leader in daily_leaders %}
+                                <div class="flex items-center justify-between p-2 bg-gray-700 rounded text-sm transition-transform duration-200 hover:scale-105">
+                                    <div class="flex items-center">
+                                        <span class="w-6 h-6 {{ 'bg-yellow-500' if loop.index == 1 else 'bg-gray-500' if loop.index == 2 else 'bg-amber-800' if loop.index == 3 else '' }} rounded-full flex items-center justify-center text-xs font-bold mr-3">{{ loop.index }}</span>
+                                        <span>{{ leader.username }}</span>
+                                    </div>
+                                    <span class="font-bold">{{ leader.total_score }} очков</span>
+                                </div>
+                            {% else %}
+                                <p class="text-sm text-gray-400">Нет результатов за последние 24 часа</p>
+                            {% endfor %}
+                        {% endif %}
+                        <!-- Конец лидерборда за 24 часа -->
+                    </div>
+                </div>
+                <div class="block-background p-4 rounded-lg animate-slide-in">
+                    <h3 class="text-base sm:text-lg font-semibold mb-4">Общий топ</h3>
+                    <div class="space-y-3">
+                        <!-- Общий лидерборд -->
+                        {% if leaders %}
+                            {% for leader in leaders %}
+                                <div class="flex items-center justify-between p-2 bg-gray-800 rounded text-sm transition-transform duration-200 hover:scale-105">
+                                    <div class="flex items-center">
+                                        <span class="w-6 h-6 {{ 'bg-yellow-500' if loop.index == 1 else 'bg-gray-500' if loop.index == 2 else 'bg-amber-800' if loop.index == 3 else '' }} rounded-full flex items-center justify-center text-xs font-bold mr-3">{{ loop.index }}</span>
+                                        <span>{{ leader.username }}</span>
+                                    </div>
+                                    <span class="font-bold">{{ leader.score }} очков</span>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                        <!-- Конец общего лидерборда -->
+                    </div>
                 </div>
             </div>
         </div>
@@ -218,7 +246,7 @@
 
             socket.on('chat_message', (data) => {
                 const messageElement = document.createElement('div');
-                messageElement.classList.add('p-2', 'bg-gray-700', 'rounded', 'mb-2', 'text-sm');
+                messageElement.classList.add('p-2', 'bg-gray-700', 'rounded', 'mb-2', 'text-sm', 'transition-transform', 'duration-200', 'hover:scale-105');
                 messageElement.innerHTML = `
                     <span class="font-bold">${data.username}:</span>
                     <p class="text-sm text-gray-300">${data.message}</p>
@@ -277,7 +305,6 @@
             }
         }
 
-        // Toggle sidebar on mobile
         document.getElementById('sidebar-toggle').addEventListener('click', () => {
             const sidebar = document.getElementById('sidebar');
             const filters = document.getElementById('filters');

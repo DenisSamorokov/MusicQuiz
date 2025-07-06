@@ -2,10 +2,21 @@
 
 body {
     font-family: 'Poppins', sans-serif;
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
     min-height: 100vh;
     color: #e5e7eb;
     margin: 0;
+}
+
+.animated-bg {
+    background: linear-gradient(135deg, #1a1a2e, #16213e, #3b0764, #1a1a2e);
+    background-size: 400%;
+    animation: gradientShift 20s ease infinite;
+}
+
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
 
 .container {
@@ -89,7 +100,13 @@ body {
     background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(10px);
     border-radius: 12px;
-    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.block-background:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 40px rgba(31, 38, 135, 0.5);
 }
 
 .custom-player {
@@ -98,24 +115,30 @@ body {
     flex-direction: row;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(90deg, rgba(124,58,237,0.8) 0%, rgba(236,72,153,0.8) 100%);
+    background: linear-gradient(90deg, rgba(124,58,237,0.8), rgba(236,72,153,0.8));
     border-radius: 12px;
     padding: 1rem;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s;
+}
+
+.custom-player:hover {
+    transform: scale(1.02);
 }
 
 .play-btn {
-    background: none;
+    background: linear-gradient(45deg, #3b82f6, #ec4899);
     border: none;
     color: white;
     font-size: 1.5rem;
     cursor: pointer;
-    transition: transform 0.2s;
+    transition: transform 0.2s, box-shadow 0.2s;
     width: 44px;
     height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
+    border-radius: 50%;
 }
 
 @media (min-width: 640px) {
@@ -126,6 +149,7 @@ body {
 
 .play-btn:hover {
     transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .equalizer {
@@ -136,11 +160,10 @@ body {
 
 .bar {
     width: 6px;
-    height: 16px;
-    background: white;
+    background: #ffffff;
     border-radius: 3px;
-    animation: equalize 1s infinite;
-    opacity: 0.7;
+    animation: equalize 1s infinite ease-in-out;
+    opacity: 0.8;
 }
 
 @media (min-width: 640px) {
@@ -155,16 +178,16 @@ body {
 .bar:nth-child(5) { animation-delay: 0.8s; }
 
 @keyframes equalize {
-    0% { height: 16px; }
-    50% { height: 32px; }
-    100% { height: 16px; }
+    0% { height: 16px; transform: scaleY(0.5); }
+    50% { height: 32px; transform: scaleY(1); }
+    100% { height: 16px; transform: scaleY(0.5); }
 }
 
 @media (min-width: 640px) {
     @keyframes equalize {
-        0% { height: 20px; }
-        50% { height: 40px; }
-        100% { height: 20px; }
+        0% { height: 20px; transform: scaleY(0.5); }
+        50% { height: 40px; transform: scaleY(1); }
+        100% { height: 20px; transform: scaleY(0.5); }
     }
 }
 
@@ -180,11 +203,13 @@ body {
     align-items: center;
     justify-content: flex-start;
     padding-left: 1rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .option-card:hover {
     transform: translateY(-5px);
     background: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
 }
 
 @media (max-width: 639px) {
@@ -194,7 +219,8 @@ body {
 }
 
 .option-card.selected {
-    background: linear-gradient(90deg, rgba(124,58,237,0.8) 0%, rgba(236,72,153,0.8) 100%);
+    background: linear-gradient(90deg, rgba(124,58,237,0.8), rgba(236,72,153,0.8));
+    box-shadow: 0 0 10px rgba(124,58,237,0.5);
 }
 
 .option-text {
@@ -236,12 +262,18 @@ body {
 
 .difficulty-button {
     min-width: 120px;
+    transition: transform 0.2s, box-shadow 0.2s;
 }
 
 @media (min-width: 640px) {
     .difficulty-button {
         min-width: 160px;
     }
+}
+
+.difficulty-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .difficulty-text {
@@ -275,6 +307,7 @@ body {
     color: #e5e7eb;
     max-width: 100%;
     width: 90%;
+    animation: fadeIn 0.3s ease-out;
 }
 
 @media (min-width: 640px) {
@@ -315,11 +348,12 @@ body {
     display: inline-block;
     margin-top: 1rem;
     padding: 0.5rem 1rem;
-    background: #3b82f6;
+    background: linear-gradient(45deg, #3b82f6, #ec4899);
     color: white;
     border-radius: 8px;
     text-decoration: none;
     font-size: 0.875rem;
+    transition: transform 0.2s, box-shadow 0.2s;
 }
 
 @media (min-width: 640px) {
@@ -327,6 +361,11 @@ body {
         padding: 0.75rem 1.5rem;
         font-size: 1rem;
     }
+}
+
+.modal-content a:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .chat-fullscreen {
@@ -375,6 +414,11 @@ body {
     border: none;
     border-radius: 8px;
     font-size: 0.875rem;
+    transition: background 0.2s;
+}
+
+.chat-input:focus {
+    background: #4b5563;
 }
 
 @media (min-width: 640px) {
@@ -394,12 +438,19 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    border-radius: 50%;
+    transition: transform 0.2s, box-shadow 0.2s;
 }
 
 @media (min-width: 640px) {
     .chat-send-btn {
         font-size: 1.2rem;
     }
+}
+
+.chat-send-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .leaderboard-fullscreen {
@@ -429,6 +480,11 @@ body {
     border-radius: 8px;
     margin-bottom: 1rem;
     font-size: 0.875rem;
+    transition: background 0.2s;
+}
+
+.filter-select:focus {
+    background: #4b5563;
 }
 
 @media (min-width: 640px) {
@@ -449,7 +505,7 @@ body {
     border: none;
     border-radius: 8px;
     cursor: pointer;
-    transition: background 0.3s;
+    transition: transform 0.3s, box-shadow 0.3s;
     font-size: 0.875rem;
 }
 
@@ -461,7 +517,8 @@ body {
 }
 
 .apply-btn:hover {
-    background: #2563eb;
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .filter-group {
@@ -472,13 +529,6 @@ body {
     .filter-group {
         margin-bottom: 1.5rem;
     }
-}
-
-.flag-icon {
-    width: 20px;
-    height: 20px;
-    vertical-align: middle;
-    margin-right: 8px;
 }
 
 .loader {
@@ -502,7 +552,20 @@ body {
     100% { transform: rotate(360deg); }
 }
 
-/* Touch-friendly improvements */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.animate-slide-in {
+    animation: slideIn 0.5s ease-out;
+}
+
 button, a, .option-card, .chat-send-btn, .play-btn {
     touch-action: manipulation;
 }

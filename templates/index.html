@@ -4,18 +4,18 @@
 
 {% block content %}
     <div class="text-center">
-        <div class="block-background p-4 sm:p-6 mb-6">
+        <div class="block-background p-4 sm:p-6 mb-6 animate-slide-in">
             <h2 class="text-lg sm:text-xl font-semibold mb-4">Выберите уровень</h2>
             <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
-                <a href="{{ url_for('play', difficulty='easy', style=session['selected_style']) }}" class="difficulty-button px-4 py-2 sm:px-6 sm:py-3 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm sm:text-base text-center" aria-label="Играть на уровне Лёгкий за +5 очков">
+                <a href="{{ url_for('play', difficulty='easy', style=session['selected_style'] or 'any') }}" class="difficulty-button px-4 py-2 sm:px-6 sm:py-3 rounded-lg bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white text-sm sm:text-base text-center transition-all duration-200 hover:scale-105" aria-label="Играть на уровне Лёгкий за +5 очков">
                     <span class="difficulty-text font-bold">Лёгкий</span>
                     <span class="points-text">+5 очков</span>
                 </a>
-                <a href="{{ url_for('play', difficulty='medium', style=session['selected_style']) }}" class="difficulty-button px-4 py-2 sm:px-6 sm:py-3 rounded-lg bg-yellow-600 hover:bg-yellow-700 text-white text-sm sm:text-base text-center" aria-label="Играть на уровне Средний за +10 очков">
+                <a href="{{ url_for('play', difficulty='medium', style=session['selected_style'] or 'any') }}" class="difficulty-button px-4 py-2 sm:px-6 sm:py-3 rounded-lg bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-700 hover:to-yellow-600 text-white text-sm sm:text-base text-center transition-all duration-200 hover:scale-105" aria-label="Играть на уровне Средний за +10 очков">
                     <span class="difficulty-text font-bold">Средний</span>
                     <span class="points-text">+10 очков</span>
                 </a>
-                <a href="{{ url_for('play', difficulty='hard', style=session['selected_style']) }}" class="difficulty-button px-4 py-2 sm:px-6 sm:py-3 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm sm:text-base text-center" aria-label="Играть на уровне Сложный за +15 очков">
+                <a href="{{ url_for('play', difficulty='hard', style=session['selected_style'] or 'any') }}" class="difficulty-button px-4 py-2 sm:px-6 sm:py-3 rounded-lg bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 text-white text-sm sm:text-base text-center transition-all duration-200 hover:scale-105" aria-label="Играть на уровне Сложный за +15 очков">
                     <span class="difficulty-text font-bold">Сложный</span>
                     <span class="points-text">+15 очков</span>
                 </a>

@@ -22,11 +22,6 @@
             </div>
         </div>
 
-        <div id="loading" class="flex justify-center items-center mb-4" style="display: none;">
-            <div class="loader"></div>
-            <p class="ml-2 text-gray-400 text-sm">Загрузка...</p>
-        </div>
-
         {% if track and options %}
         <div class="block-background p-4 sm:p-6 mb-6">
             <div class="flex flex-col sm:flex-row justify-center items-center mb-4">
@@ -141,20 +136,7 @@
             sessionStorage.setItem('selected_style', '{{ session['selected_style'] }}');
             resultModal.classList.add('hidden');
             timeoutModal.classList.add('hidden');
-            if (timer) {
-                clearInterval(timer);
-                timer = null;
-            }
-            startTimer();
-            if (sessionStorage.getItem('userInteraction')) {
-                tryPlayAudio();
-            } else {
-                document.addEventListener('click', () => {
-                    sessionStorage.setItem('userInteraction', 'true');
-                    tryPlayAudio();
-                }, { once: true });
-            }
-
+            playBtn.innerHTML = '<i class="fas fa-play text-xl sm:text-2xl"></i>'; // Гарантируем начальное состояние "play"
             // Проверка обрезки текста для title и artist
             document.querySelectorAll('.option-title, .option-artist').forEach(text => {
                 const isTruncated = text.scrollWidth > text.clientWidth || text.scrollHeight > text.clientHeight;
@@ -162,8 +144,13 @@
                     text.classList.add('truncated');
                 }
             });
+            // Пытаемся воспроизвести аудио сразу
+            tryPlayAudio();
+            // Устанавливаем userInteraction после любого клика, чтобы последующие загрузки работали без проблем
+            document.addEventListener('click', () => {
+                sessionStorage.setItem('userInteraction', 'true');
+            }, { once: true });
         });
-
 
         function startTimer() {
             if (!timer) {
@@ -174,6 +161,7 @@
                         clearInterval(timer);
                         timer = null;
                         audio.pause();
+                        playBtn.innerHTML = '<i class="fas fa-play text-xl sm:text-2xl"></i>';
                         equalizer.style.display = 'none';
                         timeoutModal.classList.remove('hidden');
                     }
@@ -198,6 +186,7 @@
                 errorElement.style.display = 'block';
                 equalizer.style.display = 'none';
                 audioLoading.style.display = 'none';
+                playBtn.innerHTML = '<i class="fas fa-play text-xl sm:text-2xl"></i>';
                 return;
             }
             playAttempts++;
@@ -207,6 +196,7 @@
                 if (audio.paused) {
                     equalizer.style.display = 'none';
                     audioLoading.style.display = 'none';
+                    playBtn.innerHTML = '<i class="fas fa-play text-xl sm:text-2xl"></i>';
                     tryPlayAudio();
                 }
             }, 3000);
@@ -216,12 +206,15 @@
                 equalizer.style.display = 'block';
                 audioLoading.style.display = 'none';
                 clearTimeout(equalizerTimeout);
+                startTimer(); // Запускаем таймер только после успешного воспроизведения
                 preloadNextTrack();
                 playAttempts = 0;
             }).catch(error => {
+                console.error('Ошибка воспроизведения:', error);
                 errorElement.style.display = 'block';
                 equalizer.style.display = 'none';
                 audioLoading.style.display = 'none';
+                playBtn.innerHTML = '<i class="fas fa-play text-xl sm:text-2xl"></i>';
                 clearTimeout(equalizerTimeout);
                 setTimeout(tryPlayAudio, 500);
             });
@@ -236,11 +229,16 @@
                 equalizer.style.display = 'none';
                 audioLoading.style.display = 'none';
                 clearTimeout(equalizerTimeout);
+                if (timer) {
+                    clearInterval(timer);
+                    timer = null;
+                }
             }
         });
 
         audio.addEventListener('canplay', () => {
             audioLoading.style.display = 'none';
+            // Обновляем кнопку только если аудио действительно играет
             if (!audio.paused) {
                 equalizer.style.display = 'block';
                 playBtn.innerHTML = '<i class="fas fa-pause text-xl sm:text-2xl"></i>';
@@ -255,6 +253,10 @@
                 equalizer.style.display = 'none';
                 audioLoading.style.display = 'none';
                 clearTimeout(equalizerTimeout);
+                if (timer) {
+                    clearInterval(timer);
+                    timer = null;
+                }
             }
         });
 
@@ -263,12 +265,17 @@
             equalizer.style.display = 'none';
             audioLoading.style.display = 'none';
             clearTimeout(equalizerTimeout);
+            if (timer) {
+                clearInterval(timer);
+                timer = null;
+            }
         });
 
         audio.addEventListener('error', (e) => {
             errorElement.style.display = 'block';
             equalizer.style.display = 'none';
             audioLoading.style.display = 'none';
+            playBtn.innerHTML = '<i class="fas fa-play text-xl sm:text-2xl"></i>';
             clearTimeout(equalizerTimeout);
             if (playAttempts < maxPlayAttempts) {
                 setTimeout(tryPlayAudio, 500);
@@ -286,6 +293,7 @@
                     timer = null;
                 }
                 audio.pause();
+                playBtn.innerHTML = '<i class="fas fa-play text-xl sm:text-2xl"></i>';
                 equalizer.style.display = 'none';
                 audioLoading.style.display = 'none';
                 clearTimeout(equalizerTimeout);
@@ -301,7 +309,7 @@
                 resultTitle.className = `text-lg sm:text-xl font-semibold mb-4 ${isCorrect ? 'correct' : ''}`;
                 resultAnswer.textContent = `Ответ: ${trackTitle} от ${trackArtist}`;
                 resultModal.classList.remove('hidden');
-                resultLoading.style.display = 'none'; // Скрываем загрузку
+                resultLoading.style.display = 'none';
 
                 document.querySelectorAll('.option-card').forEach(card => {
                     card.classList.remove('selected');
