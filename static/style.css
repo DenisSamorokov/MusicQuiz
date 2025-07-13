@@ -109,6 +109,19 @@ body {
     box-shadow: 0 12px 40px rgba(31, 38, 135, 0.5);
 }
 
+.welcome-text {
+    background: linear-gradient(90deg, rgba(124,58,237,0.8), rgba(59,130,246,0.8));
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s;
+}
+
+.welcome-text:hover {
+    transform: scale(1.02);
+}
+
 .custom-player {
     position: relative;
     display: flex;

@@ -6,9 +6,10 @@
     <title>{% block title %}{% endblock %} - MusicQuiz</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='1.0') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
 </head>
-<body class="relative overflow-hidden">
+<body class="relative min-h-screen">
     <!-- Анимированный фон -->
     <div class="animated-bg absolute inset-0 z-0"></div>
     <div class="container relative z-10">
@@ -24,7 +25,6 @@
                 </a>
             </div>
             <div class="flex items-center space-x-4">
-                <!-- Проверка авторизации -->
                 {% if current_user.is_authenticated %}
                     <span class="text-sm font-medium text-gray-200">{{ current_user.username }}</span>
                     <a href="{{ url_for('logout') }}" class="text-red-400 hover:text-red-300 transition-colors duration-200">
@@ -34,7 +34,6 @@
                     <a href="{{ url_for('login') }}" class="text-blue-400 hover:text-blue-300 transition-colors duration-200">Войти</a>
                     <a href="{{ url_for('register') }}" class="text-blue-400 hover:text-blue-300 transition-colors duration-200">Регистрация</a>
                 {% endif %}
-                <!-- Конец проверки авторизации -->
             </div>
         </header>
         <div class="content-wrapper flex flex-col sm:flex-row sm:space-x-6">
@@ -63,7 +62,6 @@
                 {% block content %}{% endblock %}
             </div>
             <div class="sidebar sm:w-72 hidden sm:block animate-slide-in" id="sidebar">
-                <!-- Лидерборд за 24 часа -->
                 {% if daily_leaders %}
                     <div class="block-background p-4 sm:p-6 mb-4 sm:mb-6 animate-slide-in" id="daily-leaderboard">
                         <div class="flex justify-between items-center mb-4">
@@ -89,8 +87,6 @@
                         </div>
                     </div>
                 {% endif %}
-                <!-- Конец лидерборда за 24 часа -->
-                <!-- Общий лидерборд -->
                 {% if leaders %}
                     <div class="block-background p-4 sm:p-6 mb-4 sm:mb-6 animate-slide-in" id="leaderboard">
                         <div class="flex justify-between items-center mb-4">
@@ -114,7 +110,6 @@
                         </div>
                     </div>
                 {% endif %}
-                <!-- Конец общего лидерборда -->
                 <div class="block-background p-4 sm:p-6 animate-slide-in" id="chat">
                     <div class="flex justify-between items-center mb-4">
                         <h2 class="text-lg sm:text-xl font-semibold flex items-center">
@@ -127,7 +122,6 @@
                         </button>
                     </div>
                     <div class="space-y-3 mb-4 h-48 sm:h-64 overflow-y-auto" id="chat-messages-preview">
-                        <!-- Чат сообщения -->
                         {% if messages %}
                             {% for message in messages %}
                                 <div class="p-2 bg-gray-700 rounded text-sm transition-transform duration-200 hover:scale-105">
@@ -139,9 +133,7 @@
                                 <p class="text-sm text-gray-400">Чат пуст. Напишите первое сообщение!</p>
                             {% endfor %}
                         {% endif %}
-                        <!-- Конец чат сообщений -->
                     </div>
-                    <!-- Форма чата -->
                     {% if current_user.is_authenticated %}
                         <form id="chat-form-preview" class="chat-input-form">
                             <input type="text" id="chat-input-preview" class="chat-input text-sm" placeholder="Введите сообщение..." required>
@@ -150,7 +142,6 @@
                             </button>
                         </form>
                     {% endif %}
-                    <!-- Конец формы чата -->
                 </div>
             </div>
             <div id="chat-fullscreen" class="chat-fullscreen hidden flex-col p-4">
@@ -162,7 +153,6 @@
                     <div></div>
                 </div>
                 <div class="chat-messages block-background p-4 rounded-lg flex-1 overflow-y-auto animate-slide-in" id="chat-messages-fullscreen">
-                    <!-- Чат сообщения в полноэкранном режиме -->
                     {% if messages %}
                         {% for message in messages %}
                             <div class="p-2 bg-gray-700 rounded mb-2 text-sm transition-transform duration-200 hover:scale-105">
@@ -172,9 +162,7 @@
                             </div>
                         {% endfor %}
                     {% endif %}
-                    <!-- Конец чат сообщений -->
                 </div>
-                <!-- Форма чата в полноэкранном режиме -->
                 {% if current_user.is_authenticated %}
                     <form id="chat-form-fullscreen" class="chat-input-form mt-4">
                         <input type="text" id="chat-input-fullscreen" class="chat-input text-sm" placeholder="Введите сообщение..." required>
@@ -183,7 +171,6 @@
                         </button>
                     </form>
                 {% endif %}
-                <!-- Конец формы чата -->
             </div>
             <div id="leaderboard-fullscreen" class="leaderboard-fullscreen hidden p-4">
                 <div class="flex justify-between items-center mb-4">
@@ -196,7 +183,6 @@
                 <div class="block-background p-4 rounded-lg mb-4 animate-slide-in">
                     <h3 class="text-base sm:text-lg font-semibold mb-4">Топ за 24 часа</h3>
                     <div class="space-y-3">
-                        <!-- Лидерборд за 24 часа -->
                         {% if daily_leaders %}
                             {% for leader in daily_leaders %}
                                 <div class="flex items-center justify-between p-2 bg-gray-700 rounded text-sm transition-transform duration-200 hover:scale-105">
@@ -210,13 +196,11 @@
                                 <p class="text-sm text-gray-400">Нет результатов за последние 24 часа</p>
                             {% endfor %}
                         {% endif %}
-                        <!-- Конец лидерборда за 24 часа -->
                     </div>
                 </div>
                 <div class="block-background p-4 rounded-lg animate-slide-in">
                     <h3 class="text-base sm:text-lg font-semibold mb-4">Общий топ</h3>
                     <div class="space-y-3">
-                        <!-- Общий лидерборд -->
                         {% if leaders %}
                             {% for leader in leaders %}
                                 <div class="flex items-center justify-between p-2 bg-gray-800 rounded text-sm transition-transform duration-200 hover:scale-105">
@@ -228,62 +212,93 @@
                                 </div>
                             {% endfor %}
                         {% endif %}
-                        <!-- Конец общего лидерборда -->
                     </div>
                 </div>
             </div>
         </div>
+        <footer class="mt-8 py-4 text-center text-gray-400 text-sm block-background">
+            <p>© {{ current_year }} MusicQuiz. Все права зарезервированы.</p>
+        </footer>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <script>
         const socket = io();
 
+        // Функция для настройки чата
         function setupChatForm(formId, inputId, messagesId) {
             const chatForm = document.getElementById(formId);
             const chatInput = document.getElementById(inputId);
             const chatMessages = document.getElementById(messagesId);
 
-            socket.on('chat_message', (data) => {
-                const messageElement = document.createElement('div');
-                messageElement.classList.add('p-2', 'bg-gray-700', 'rounded', 'mb-2', 'text-sm', 'transition-transform', 'duration-200', 'hover:scale-105');
-                messageElement.innerHTML = `
-                    <span class="font-bold">${data.username}:</span>
-                    <p class="text-sm text-gray-300">${data.message}</p>
-                    <span class="text-xs text-gray-400">${new Date(data.timestamp).toLocaleString()}</span>
-                `;
-                chatMessages.appendChild(messageElement);
+            if (chatMessages) {
                 chatMessages.scrollTop = chatMessages.scrollHeight;
-            });
+            }
 
-            chatForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const message = chatInput.value.trim();
-                if (message) {
-                    socket.emit('send_event', { message });
-                    chatInput.value = '';
-                }
-            });
+            if (chatForm && chatInput) {
+                chatForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const message = chatInput.value.trim();
+                    if (message) {
+                        socket.emit('send_message', { message });
+                        chatInput.value = '';
+                    }
+                });
+
+                chatInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        chatForm.dispatchEvent(new Event('submit'));
+                    }
+                });
+            }
+        }
+
+        function setupChatMessages(messagesId) {
+            const chatMessages = document.getElementById(messagesId);
+            if (chatMessages) {
+                socket.on('chat_message', (data) => {
+                    if (chatMessages.offsetParent !== null) {
+                        const messageElement = document.createElement('div');
+                        messageElement.classList.add('p-2', 'bg-gray-700', 'rounded', 'mb-2', 'text-sm', 'transition-transform', 'duration-200', 'hover:scale-105');
+                        messageElement.innerHTML = `
+                            <span class="font-bold">${data.username}:</span>
+                            <p class="text-sm text-gray-300">${data.message}</p>
+                            <span class="text-xs text-gray-400">${new Date(data.timestamp).toLocaleString('ru-RU')}</span>
+                        `;
+                        chatMessages.appendChild(messageElement);
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                    }
+                });
+            }
         }
 
         setupChatForm('chat-form-preview', 'chat-input-preview', 'chat-messages-preview');
         setupChatForm('chat-form-fullscreen', 'chat-input-fullscreen', 'chat-messages-fullscreen');
+        setupChatMessages('chat-messages-preview');
+        setupChatMessages('chat-messages-fullscreen');
 
         function toggleChatFullscreen() {
             const chatFullscreen = document.getElementById('chat-fullscreen');
             const sidebar = document.getElementById('sidebar');
             const mainContent = document.getElementById('main-content');
             const filters = document.getElementById('filters');
+            const footer = document.querySelector('footer');
             if (chatFullscreen.classList.contains('hidden')) {
                 chatFullscreen.classList.remove('hidden');
                 sidebar.classList.add('hidden');
                 mainContent.classList.add('hidden');
                 filters.classList.add('hidden');
+                footer.classList.add('hidden');
             } else {
                 chatFullscreen.classList.add('hidden');
                 sidebar.classList.remove('hidden');
                 mainContent.classList.remove('hidden');
                 filters.classList.remove('hidden');
+                footer.classList.remove('hidden');
+            }
+            const chatMessagesFullscreen = document.getElementById('chat-messages-fullscreen');
+            if (chatMessagesFullscreen) {
+                chatMessagesFullscreen.scrollTop = chatMessagesFullscreen.scrollHeight;
             }
         }
 
@@ -292,16 +307,19 @@
             const sidebar = document.getElementById('sidebar');
             const mainContent = document.getElementById('main-content');
             const filters = document.getElementById('filters');
+            const footer = document.querySelector('footer');
             if (leaderboardFullscreen.classList.contains('hidden')) {
                 leaderboardFullscreen.classList.remove('hidden');
                 sidebar.classList.add('hidden');
                 mainContent.classList.add('hidden');
                 filters.classList.add('hidden');
+                footer.classList.add('hidden');
             } else {
                 leaderboardFullscreen.classList.add('hidden');
                 sidebar.classList.remove('hidden');
                 mainContent.classList.remove('hidden');
                 filters.classList.remove('hidden');
+                footer.classList.remove('hidden');
             }
         }
 
@@ -333,7 +351,7 @@
                       window.location.href = `/play/${difficulty}?style=${encodeURIComponent(data.style)}`;
                   }
               })
-              .catch(error => {});
+              .catch(error => console.error('Ошибка фильтра:', error));
         });
 
         window.addEventListener('load', () => {

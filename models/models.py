@@ -31,11 +31,3 @@ def init_db(app):
     db.init_app(app)
     with app.app_context():
         db.create_all()
-        if not Message.query.first():
-            welcome_message = Message(
-                username='Система',
-                message='Добро пожаловать в чат Music Quiz!',
-                timestamp=datetime.utcnow()
-            )
-            db.session.add(welcome_message)
-            db.session.commit()

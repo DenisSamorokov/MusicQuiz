@@ -3,75 +3,83 @@
 {% block title %}Чат{% endblock %}
 
 {% block content %}
-    <div class="chat-fullscreen flex flex-col p-4">
-        <div class="chat-fullscreen-header flex justify-between items-center mb-4">
-            <a href="{{ url_for('index') }}" class="text-gray-400 hover:text-gray-300">
-                <i class="fas fa-arrow-left"></i> Назад
-            </a>
-            <h2 class="text-lg sm:text-xl font-semibold">Чат сообщества</h2>
-            <div></div>
-        </div>
-        <div class="chat-messages block-background p-4 rounded-lg flex-1 overflow-y-auto" id="chat-messages">
-            {% for message in messages %}
-                <div class="p-2 bg-gray-700 rounded mb-2 text-sm">
-                    <span class="font-bold">{{ message.username }}:</span>
-                    <p class="text-sm text-gray-300">{{ message.message }}</p>
-                    <span class="text-xs text-gray-400">{{ message.timestamp.strftime('%Y-%m-%d %H:%M') }}</span>
-                </div>
-            {% endfor %}
-        </div>
-        {% if current_user.is_authenticated %}
-            <form id="chat-form" class="chat-input-form mt-4">
-                <input type="text" id="chat-input" class="chat-input text-sm" placeholder="Введите сообщение..." required>
-                <button type="submit" class="chat-send-btn">
-                    <i class="fas fa-paper-plane"></i>
-                </button>
-            </form>
-        {% endif %}
+<div class="chat-fullscreen flex flex-col p-4 sm:p-6">
+    <div class="chat-fullscreen-header flex justify-between items-center mb-4">
+        <a href="{{ url_for('index') }}" class="text-blue-400 hover:text-blue-300 transition-colors duration-200">
+            <i class="fas fa-arrow-left mr-2"></i>Назад
+        </a>
+        <h2 class="text-lg sm:text-xl font-semibold">Чат сообщества</h2>
+        <div></div>
     </div>
+    <div class="chat-messages block-background p-4 rounded-lg flex-1 overflow-y-auto animate-slide-in" id="chat-messages">
+        {% for message in messages %}
+            <div class="p-2 bg-gray-700 rounded mb-2 text-sm transition-transform duration-200 hover:scale-105">
+                <span class="font-bold">{{ message.username }}:</span>
+                <p class="text-sm text-gray-300">{{ message.message }}</p>
+                <span class="text-xs text-gray-400">{{ message.timestamp.strftime('%Y-%m-%d %H:%M') }}</span>
+            </div>
+        {% endfor %}
+    </div>
+    {% if current_user.is_authenticated %}
+        <form id="chat-form" class="chat-input-form mt-4">
+            <input type="text" id="chat-input" class="chat-input text-sm" placeholder="Введите сообщение..." required>
+            <button type="submit" class="chat-send-btn bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </form>
+    {% endif %}
+</div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
-    <script>
-        const socket = io();
-        const chatForm = document.getElementById('chat-form');
-        const chatInput = document.getElementById('chat-input');
-        const chatMessages = document.getElementById('chat-messages');
+<script>
+    const socket = io();
+    setupChatForm('chat-form', 'chat-input', 'chat-messages');
+    setupChatMessages('chat-messages');
 
-        socket.on('chat_message', (data) => {
-            const messageElement = document.createElement('div');
-            messageElement.classList.add('p-2', 'bg-gray-700', 'rounded', 'mb-2', 'text-sm');
-            messageElement.innerHTML = `
-                <span class="font-bold">${data.username}:</span>
-                <p class="text-sm text-gray-300">${data.message}</p>
-                <span class="text-xs text-gray-400">${new Date(data.timestamp).toLocaleString()}</span>
-            `;
-            chatMessages.appendChild(messageElement);
+    function setupChatForm(formId, inputId, messagesId) {
+        const chatForm = document.getElementById(formId);
+        const chatInput = document.getElementById(inputId);
+        const chatMessages = document.getElementById(messagesId);
+
+        if (chatMessages) {
             chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
 
-            const previewMessages = document.getElementById('chat-messages-preview');
-            if (previewMessages) {
-                const previewElement = document.createElement('div');
-                previewElement.classList.add('p-2', 'bg-gray-700', 'rounded', 'text-sm');
-                previewElement.innerHTML = `
-                    <span class="font-bold">${data.username}:</span>
-                    <p class="text-sm text-gray-300">${data.message}</p>
-                    <span class="text-xs text-gray-400">${new Date(data.timestamp).toLocaleString()}</span>
-                `;
-                previewMessages.appendChild(previewElement);
-                while (previewMessages.children.length > 3) {
-                    previewMessages.removeChild(previewMessages.firstChild);
+        if (chatForm && chatInput) {
+            chatForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const message = chatInput.value.trim();
+                if (message) {
+                    socket.emit('send_message', { message });
+                    chatInput.value = '';
                 }
-                previewMessages.scrollTop = previewMessages.scrollHeight;
-            }
-        });
+            });
 
-        chatForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const message = chatInput.value.trim();
-            if (message) {
-                socket.emit('send_message', { message });
-                chatInput.value = '';
-            }
-        });
-    </script>
+            chatInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    chatForm.dispatchEvent(new Event('submit'));
+                }
+            });
+        }
+    }
+
+    function setupChatMessages(messagesId) {
+        const chatMessages = document.getElementById(messagesId);
+        if (chatMessages) {
+            socket.on('chat_message', (data) => {
+                if (chatMessages.offsetParent !== null) {
+                    const messageElement = document.createElement('div');
+                    messageElement.classList.add('p-2', 'bg-gray-700', 'rounded', 'mb-2', 'text-sm', 'transition-transform', 'duration-200', 'hover:scale-105');
+                    messageElement.innerHTML = `
+                        <span class="font-bold">${data.username}:</span>
+                        <p class="text-sm text-gray-300">${data.message}</p>
+                        <span class="text-xs text-gray-400">${new Date(data.timestamp).toLocaleString('ru-RU')}</span>
+                    `;
+                    chatMessages.appendChild(messageElement);
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
+            });
+        }
+    }
+</script>
 {% endblock %}

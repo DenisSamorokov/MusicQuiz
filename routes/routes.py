@@ -7,7 +7,10 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
 import requests
 import eventlet
+import logging
 
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 def init_routes(app: Flask, socketio=None):
     def check_deezer_api():
@@ -90,6 +93,7 @@ def init_routes(app: Flask, socketio=None):
                 session.update(updated_session_data)
                 session.modified = True
         except Exception as e:
+            logger.error(f"Ошибка при загрузке трека: {e}")
             flash("Не удалось загрузить трек. Попробуйте снова.", "error")
             return render_template('index.html', leaders=leaders, daily_leaders=daily_leaders, messages=messages)
 
@@ -127,6 +131,7 @@ def init_routes(app: Flask, socketio=None):
             response.raise_for_status()
             return Response(response.content, content_type=response.headers.get('Content-Type'))
         except requests.RequestException as e:
+            logger.error(f"Ошибка прокси: {e}")
             return Response("Ошибка загрузки аудио", status=500)
 
     @app.route('/preload/<difficulty>/<style>')
@@ -161,6 +166,7 @@ def init_routes(app: Flask, socketio=None):
                 ]
             })
         except Exception as e:
+            logger.error(f"Ошибка при предзагрузке трека: {e}")
             return jsonify({'error': 'Не удалось загрузить трек'}), 500
 
     @app.route('/set_filter', methods=['POST'])
@@ -209,6 +215,7 @@ def init_routes(app: Flask, socketio=None):
             ScoreEvent.timestamp >= time_threshold
         ).group_by(User.id).order_by(db.func.sum(ScoreEvent.score).desc()).limit(5).all()
         messages = Message.query.order_by(Message.timestamp.desc()).all()
+        logger.debug(f"Загружено сообщений для чата: {len(messages)}")
         return render_template('chat.html', messages=messages, leaders=leaders, daily_leaders=daily_leaders)
 
     @app.route('/login', methods=['GET', 'POST'])
@@ -220,9 +227,11 @@ def init_routes(app: Flask, socketio=None):
             if user and check_password_hash(user.password, password):
                 login_user(user)
                 session['selected_style'] = 'any'
+                logger.debug(f"Пользователь {username} вошёл в систему")
                 return redirect(url_for('index'))
             else:
                 flash('Неверное имя пользователя или пароль.', 'error')
+                logger.warning(f"Неудачная попытка входа: {username}")
         return render_template('login.html')
 
     @app.route('/register', methods=['GET', 'POST'])
@@ -232,6 +241,7 @@ def init_routes(app: Flask, socketio=None):
             password = request.form.get('password')
             if User.query.filter_by(username=username).first():
                 flash('Имя пользователя уже занято.', 'error')
+                logger.warning(f"Попытка регистрации с занятым именем: {username}")
             else:
                 user = User(username=username, password=generate_password_hash(password))
                 db.session.add(user)
@@ -239,6 +249,7 @@ def init_routes(app: Flask, socketio=None):
                 login_user(user)
                 session['selected_style'] = 'any'
                 flash('Регистрация успешна! Добро пожаловать!', 'success')
+                logger.debug(f"Пользователь {username} зарегистрирован")
                 return redirect(url_for('index'))
         return render_template('register.html')
 
@@ -246,12 +257,14 @@ def init_routes(app: Flask, socketio=None):
     @login_required
     def logout():
         session['selected_style'] = 'any'
+        logger.debug(f"Пользователь {current_user.username} вышел")
         logout_user()
         return redirect(url_for('index'))
 
     @socketio.on('connect')
     def handle_connect():
         messages = Message.query.order_by(Message.timestamp.desc()).all()
+        logger.debug(f"Клиент подключился, отправлено сообщений: {len(messages)}")
         for message in messages:
             emit('chat_message', {
                 'username': message.username,
@@ -261,13 +274,21 @@ def init_routes(app: Flask, socketio=None):
 
     @socketio.on('send_message')
     def handle_message(data):
+        if not current_user.is_authenticated:
+            logger.warning("Попытка отправки сообщения неавторизованным пользователем")
+            return
+        message_text = data.get('message', '').strip()
+        if not message_text:
+            logger.warning("Пустое сообщение не сохранено")
+            return
         message = Message(
             username=current_user.username,
-            message=data['message'],
+            message=message_text,
             timestamp=datetime.utcnow()
         )
         db.session.add(message)
         db.session.commit()
+        logger.debug(f"Сообщение сохранено: {message_text} от {current_user.username}")
         emit('chat_message', {
             'username': message.username,
             'message': message.message,
