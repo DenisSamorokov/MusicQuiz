@@ -5,6 +5,8 @@ body {
     min-height: 100vh;
     color: #e5e7eb;
     margin: 0;
+    display: flex;
+    flex-direction: column;
 }
 
 .animated-bg {
@@ -23,7 +25,9 @@ body {
     max-width: 100%;
     margin: 0 auto;
     padding: 1rem;
-    min-height: 100vh;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 @media (min-width: 640px) {
@@ -50,6 +54,7 @@ body {
     display: flex;
     flex-direction: column;
     align-items: stretch;
+    flex: 1;
 }
 
 @media (min-width: 640px) {
@@ -93,6 +98,18 @@ body {
 @media (min-width: 640px) {
     .sidebar {
         width: 300px;
+    }
+}
+
+.leaderboard-sidebar {
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
+@media (min-width: 640px) {
+    .leaderboard-sidebar {
+        width: 300px;
+        margin-bottom: 0;
     }
 }
 
@@ -581,4 +598,26 @@ body {
 
 button, a, .option-card, .chat-send-btn, .play-btn {
     touch-action: manipulation;
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #2d3748;
+}
+::-webkit-scrollbar-thumb {
+    background: #4a5568;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #718096;
+}
+
+footer {
+    width: 100vw;
+    background: #1e1e2f;
+    padding: 1rem 0;
+    text-align: center;
+    z-index: 10;
 }

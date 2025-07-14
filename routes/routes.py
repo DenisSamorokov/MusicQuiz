@@ -13,6 +13,27 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 def init_routes(app: Flask, socketio=None):
+    @app.context_processor
+    def inject_user_ranks():
+        if current_user.is_authenticated:
+            time_threshold = datetime.utcnow() - timedelta(hours=24)
+            try:
+                user_daily_rank = db.session.query(
+                    db.func.count().label('rank')
+                ).select_from(User).join(ScoreEvent, User.id == ScoreEvent.user_id, isouter=True).filter(
+                    ScoreEvent.timestamp >= time_threshold,
+                    User.score > current_user.score
+                ).scalar()
+                user_daily_rank = (user_daily_rank or 0) + 1
+            except Exception as e:
+                logger.error(f"Ошибка при вычислении user_daily_rank: {e}")
+                user_daily_rank = None
+            user_overall_rank = User.query.filter(User.score > current_user.score).count() + 1
+        else:
+            user_daily_rank = None
+            user_overall_rank = None
+        return dict(user_daily_rank=user_daily_rank, user_overall_rank=user_overall_rank)
+
     def check_deezer_api():
         try:
             response = requests.get("https://api.deezer.com/ping", timeout=5)
@@ -26,10 +47,10 @@ def init_routes(app: Flask, socketio=None):
         time_threshold = datetime.utcnow() - timedelta(hours=24)
         daily_leaders = db.session.query(
             User.username,
-            db.func.sum(ScoreEvent.score).label('total_score')
-        ).join(ScoreEvent).filter(
-            ScoreEvent.timestamp >= time_threshold
-        ).group_by(User.id).order_by(db.func.sum(ScoreEvent.score).desc()).limit(5).all()
+            db.func.coalesce(db.func.sum(ScoreEvent.score), 0).label('total_score')
+        ).select_from(User).join(ScoreEvent, User.id == ScoreEvent.user_id, isouter=True).filter(
+            (ScoreEvent.timestamp >= time_threshold) | (ScoreEvent.timestamp.is_(None))
+        ).group_by(User.id, User.username).order_by(db.func.coalesce(db.func.sum(ScoreEvent.score), 0).desc(), User.username).limit(5).all()
         messages = Message.query.order_by(Message.timestamp.desc()).limit(3).all()
         if 'selected_style' not in session:
             session['selected_style'] = 'any'
@@ -64,10 +85,10 @@ def init_routes(app: Flask, socketio=None):
         time_threshold = datetime.utcnow() - timedelta(hours=24)
         daily_leaders = db.session.query(
             User.username,
-            db.func.sum(ScoreEvent.score).label('total_score')
-        ).join(ScoreEvent).filter(
-            ScoreEvent.timestamp >= time_threshold
-        ).group_by(User.id).order_by(db.func.sum(ScoreEvent.score).desc()).limit(5).all()
+            db.func.coalesce(db.func.sum(ScoreEvent.score), 0).label('total_score')
+        ).select_from(User).join(ScoreEvent, User.id == ScoreEvent.user_id, isouter=True).filter(
+            (ScoreEvent.timestamp >= time_threshold) | (ScoreEvent.timestamp.is_(None))
+        ).group_by(User.id, User.username).order_by(db.func.coalesce(db.func.sum(ScoreEvent.score), 0).desc(), User.username).limit(5).all()
         messages = Message.query.order_by(Message.timestamp.desc()).limit(3).all()
 
         if request.method == 'POST':
@@ -192,16 +213,32 @@ def init_routes(app: Flask, socketio=None):
 
     @app.route('/leaderboard')
     def leaderboard():
-        leaders = User.query.order_by(User.score.desc()).limit(10).all()
+        leaders = User.query.order_by(User.score.desc()).limit(5).all()
         time_threshold = datetime.utcnow() - timedelta(hours=24)
         daily_leaders = db.session.query(
             User.username,
-            db.func.sum(ScoreEvent.score).label('total_score')
-        ).join(ScoreEvent).filter(
-            ScoreEvent.timestamp >= time_threshold
-        ).group_by(User.id).order_by(db.func.sum(ScoreEvent.score).desc()).limit(10).all()
-        messages = Message.query.order_by(Message.timestamp.desc()).limit(3).all()
-        return render_template('leaderboard.html', leaders=leaders, daily_leaders=daily_leaders, messages=messages)
+            db.func.coalesce(db.func.sum(ScoreEvent.score), 0).label('total_score')
+        ).select_from(User).join(ScoreEvent, User.id == ScoreEvent.user_id, isouter=True).filter(
+            (ScoreEvent.timestamp >= time_threshold) | (ScoreEvent.timestamp.is_(None))
+        ).group_by(User.id, User.username).order_by(db.func.coalesce(db.func.sum(ScoreEvent.score), 0).desc(), User.username).limit(5).all()
+        if current_user.is_authenticated:
+            try:
+                user_daily_rank = db.session.query(
+                    db.func.count().label('rank')
+                ).select_from(User).join(ScoreEvent, User.id == ScoreEvent.user_id, isouter=True).filter(
+                    ScoreEvent.timestamp >= time_threshold,
+                    User.score > current_user.score
+                ).scalar()
+                user_daily_rank = (user_daily_rank or 0) + 1
+            except Exception as e:
+                logger.error(f"Ошибка при вычислении user_daily_rank: {e}")
+                user_daily_rank = None
+            user_overall_rank = User.query.filter(User.score > current_user.score).count() + 1
+        else:
+            user_daily_rank = None
+            user_overall_rank = None
+        return render_template('leaderboard.html', leaders=leaders, daily_leaders=daily_leaders,
+                               user_daily_rank=user_daily_rank, user_overall_rank=user_overall_rank)
 
     @app.route('/chat')
     @login_required
@@ -210,10 +247,10 @@ def init_routes(app: Flask, socketio=None):
         time_threshold = datetime.utcnow() - timedelta(hours=24)
         daily_leaders = db.session.query(
             User.username,
-            db.func.sum(ScoreEvent.score).label('total_score')
-        ).join(ScoreEvent).filter(
-            ScoreEvent.timestamp >= time_threshold
-        ).group_by(User.id).order_by(db.func.sum(ScoreEvent.score).desc()).limit(5).all()
+            db.func.coalesce(db.func.sum(ScoreEvent.score), 0).label('total_score')
+        ).select_from(User).join(ScoreEvent, User.id == ScoreEvent.user_id, isouter=True).filter(
+            (ScoreEvent.timestamp >= time_threshold) | (ScoreEvent.timestamp.is_(None))
+        ).group_by(User.id, User.username).order_by(db.func.coalesce(db.func.sum(ScoreEvent.score), 0).desc(), User.username).limit(5).all()
         messages = Message.query.order_by(Message.timestamp.desc()).all()
         logger.debug(f"Загружено сообщений для чата: {len(messages)}")
         return render_template('chat.html', messages=messages, leaders=leaders, daily_leaders=daily_leaders)

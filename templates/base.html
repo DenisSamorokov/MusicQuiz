@@ -9,10 +9,10 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='1.0') }}">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
 </head>
-<body class="relative min-h-screen">
+<body class="relative flex flex-col min-h-screen">
     <!-- Анимированный фон -->
     <div class="animated-bg absolute inset-0 z-0"></div>
-    <div class="container relative z-10">
+    <div class="container relative z-10 flex flex-col flex-1">
         <header class="header flex justify-between items-center mb-6 sm:mb-8">
             <div class="flex items-center">
                 <button id="sidebar-toggle" class="sm:hidden text-gray-400 hover:text-gray-300 mr-4">
@@ -36,80 +36,32 @@
                 {% endif %}
             </div>
         </header>
-        <div class="content-wrapper flex flex-col sm:flex-row sm:space-x-6">
-            <div class="filters block-background p-4 sm:p-6 mb-4 sm:mb-0 sm:w-72 hidden sm:block animate-slide-in" id="filters">
-                <h2 class="text-lg sm:text-xl font-semibold mb-4 flex items-center">
-                    <i class="fas fa-filter mr-2 text-blue-400"></i>Фильтры
-                </h2>
-                <form id="filter-form" method="POST" action="/set_filter">
-                    <div class="filter-group">
-                        <label for="style-select" class="block mb-2 text-sm sm:text-base">Жанр</label>
-                        <select id="style-select" name="style" class="filter-select w-full text-sm sm:text-base transition-colors duration-200">
-                            <option value="any" {% if session['selected_style'] == 'any' %}selected{% endif %}>Любой</option>
-                            <option value="Pop" {% if session['selected_style'] == 'Pop' %}selected{% endif %}>Pop</option>
-                            <option value="Rock" {% if session['selected_style'] == 'Rock' %}selected{% endif %}>Rock</option>
-                            <option value="Rap_Hip Hop" {% if session['selected_style'] == 'Rap_Hip Hop' %}selected{% endif %}>Rap/Hip Hop</option>
-                            <option value="R_B" {% if session['selected_style'] == 'R_B' %}selected{% endif %}>R&B</option>
-                            <option value="Dance" {% if session['selected_style'] == 'Dance' %}selected{% endif %}>Dance</option>
-                            <option value="Electro" {% if session['selected_style'] == 'Electro' %}selected{% endif %}>Electro</option>
-                            <option value="Soul _ Funk" {% if session['selected_style'] == 'Soul _ Funk' %}selected{% endif %}>Soul & Funk</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="apply-btn w-full mt-2 text-sm sm:text-base bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 transition-all duration-200">Применить фильтр</button>
-                </form>
-            </div>
-            <div class="main-content flex-1 max-w-full sm:max-w-2xl mb-4 sm:mb-0 animate-slide-in" id="main-content">
-                {% block content %}{% endblock %}
-            </div>
+        <div class="content-wrapper flex flex-col sm:flex-row sm:space-x-6 flex-1">
+            <!-- Левая колонка: фильтры и чат -->
             <div class="sidebar sm:w-72 hidden sm:block animate-slide-in" id="sidebar">
-                {% if daily_leaders %}
-                    <div class="block-background p-4 sm:p-6 mb-4 sm:mb-6 animate-slide-in" id="daily-leaderboard">
-                        <div class="flex justify-between items-center mb-4">
-                            <h2 class="text-lg sm:text-xl font-semibold flex items-center">
-                                <i class="fas fa-trophy mr-2 text-blue-400"></i>Топ за 24 часа
-                            </h2>
-                            <button onclick="toggleLeaderboardFullscreen()" class="text-gray-400 hover:text-gray-300 transition-colors duration-200">
-                                <i class="fas fa-expand"></i>
-                            </button>
+                <!-- Фильтры -->
+                <div class="block-background p-4 sm:p-6 mb-4 sm:mb-6 animate-slide-in">
+                    <h2 class="text-lg sm:text-xl font-semibold mb-4 flex items-center">
+                        <i class="fas fa-filter mr-2 text-blue-400"></i>Фильтры
+                    </h2>
+                    <form id="filter-form" method="POST" action="/set_filter">
+                        <div class="filter-group">
+                            <label for="style-select" class="block mb-2 text-sm sm:text-base">Жанр</label>
+                            <select id="style-select" name="style" class="filter-select w-full text-sm sm:text-base transition-colors duration-200">
+                                <option value="any" {% if session['selected_style'] == 'any' %}selected{% endif %}>Любой</option>
+                                <option value="Pop" {% if session['selected_style'] == 'Pop' %}selected{% endif %}>Pop</option>
+                                <option value="Rock" {% if session['selected_style'] == 'Rock' %}selected{% endif %}>Rock</option>
+                                <option value="Rap_Hip Hop" {% if session['selected_style'] == 'Rap_Hip Hop' %}selected{% endif %}>Rap/Hip Hop</option>
+                                <option value="R_B" {% if session['selected_style'] == 'R_B' %}selected{% endif %}>R&B</option>
+                                <option value="Dance" {% if session['selected_style'] == 'Dance' %}selected{% endif %}>Dance</option>
+                                <option value="Electro" {% if session['selected_style'] == 'Electro' %}selected{% endif %}>Electro</option>
+                                <option value="Soul _ Funk" {% if session['selected_style'] == 'Soul _ Funk' %}selected{% endif %}>Soul & Funk</option>
+                            </select>
                         </div>
-                        <div class="space-y-3">
-                            {% for leader in daily_leaders %}
-                                <div class="flex items-center justify-between p-2 bg-gray-700 rounded text-sm sm:text-base transition-transform duration-200 hover:scale-105">
-                                    <div class="flex items-center">
-                                        <span class="w-6 h-6 {{ 'bg-yellow-500' if loop.index == 1 else 'bg-gray-500' if loop.index == 2 else 'bg-amber-800' if loop.index == 3 else '' }} rounded-full flex items-center justify-center text-xs font-bold mr-3">{{ loop.index }}</span>
-                                        <span>{{ leader.username }}</span>
-                                    </div>
-                                    <span class="font-bold">{{ leader.total_score }} очков</span>
-                                </div>
-                            {% else %}
-                                <p class="text-sm text-gray-400">Нет результатов за последние 24 часа</p>
-                            {% endfor %}
-                        </div>
-                    </div>
-                {% endif %}
-                {% if leaders %}
-                    <div class="block-background p-4 sm:p-6 mb-4 sm:mb-6 animate-slide-in" id="leaderboard">
-                        <div class="flex justify-between items-center mb-4">
-                            <h2 class="text-lg sm:text-xl font-semibold flex items-center">
-                                <i class="fas fa-trophy mr-2 text-yellow-400"></i>Таблица лидеров
-                            </h2>
-                            <button onclick="toggleLeaderboardFullscreen()" class="text-gray-400 hover:text-gray-300 transition-colors duration-200">
-                                <i class="fas fa-expand"></i>
-                            </button>
-                        </div>
-                        <div class="space-y-3">
-                            {% for leader in leaders %}
-                                <div class="flex items-center justify-between p-2 bg-gray-700 rounded text-sm sm:text-base transition-transform duration-200 hover:scale-105">
-                                    <div class="flex items-center">
-                                        <span class="w-6 h-6 {{ 'bg-yellow-500' if loop.index == 1 else 'bg-gray-500' if loop.index == 2 else 'bg-amber-800' if loop.index == 3 else '' }} rounded-full flex items-center justify-center text-xs font-bold mr-3">{{ loop.index }}</span>
-                                        <span>{{ leader.username }}</span>
-                                    </div>
-                                    <span class="font-bold">{{ leader.score }} очков</span>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                {% endif %}
+                        <button type="submit" class="apply-btn w-full mt-2 text-sm sm:text-base bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 transition-all duration-200">Применить фильтр</button>
+                    </form>
+                </div>
+                <!-- Чат -->
                 <div class="block-background p-4 sm:p-6 animate-slide-in" id="chat">
                     <div class="flex justify-between items-center mb-4">
                         <h2 class="text-lg sm:text-xl font-semibold flex items-center">
@@ -144,82 +96,192 @@
                     {% endif %}
                 </div>
             </div>
-            <div id="chat-fullscreen" class="chat-fullscreen hidden flex-col p-4">
-                <div class="chat-fullscreen-header flex justify-between items-center mb-4">
-                    <button onclick="toggleChatFullscreen()" class="text-gray-400 hover:text-gray-300 transition-colors duration-200">
-                        <i class="fas fa-arrow-left"></i> Назад
-                    </button>
-                    <h2 class="text-lg sm:text-xl font-semibold">Чат сообщества</h2>
-                    <div></div>
-                </div>
-                <div class="chat-messages block-background p-4 rounded-lg flex-1 overflow-y-auto animate-slide-in" id="chat-messages-fullscreen">
-                    {% if messages %}
-                        {% for message in messages %}
-                            <div class="p-2 bg-gray-700 rounded mb-2 text-sm transition-transform duration-200 hover:scale-105">
-                                <span class="font-bold">{{ message.username }}:</span>
-                                <p class="text-sm text-gray-300">{{ message.message }}</p>
-                                <span class="text-xs text-gray-400">{{ message.timestamp.strftime('%Y-%m-%d %H:%M') }}</span>
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-                </div>
-                {% if current_user.is_authenticated %}
-                    <form id="chat-form-fullscreen" class="chat-input-form mt-4">
-                        <input type="text" id="chat-input-fullscreen" class="chat-input text-sm" placeholder="Введите сообщение..." required>
-                        <button type="submit" class="chat-send-btn bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
-                            <i class="fas fa-paper-plane"></i>
-                        </button>
-                    </form>
-                {% endif %}
+            <!-- Центральная часть: контент дочерних шаблонов -->
+            <div class="main-content flex-1 max-w-full sm:max-w-2xl mb-4 sm:mb-0 animate-slide-in" id="main-content">
+                {% block content %}{% endblock %}
             </div>
-            <div id="leaderboard-fullscreen" class="leaderboard-fullscreen hidden p-4">
-                <div class="flex justify-between items-center mb-4">
-                    <button onclick="toggleLeaderboardFullscreen()" class="text-gray-400 hover:text-gray-300 transition-colors duration-200">
-                        <i class="fas fa-arrow-left"></i> Назад
-                    </button>
-                    <h2 class="text-lg sm:text-xl font-semibold">Таблица лидеров</h2>
-                    <div></div>
-                </div>
-                <div class="block-background p-4 rounded-lg mb-4 animate-slide-in">
-                    <h3 class="text-base sm:text-lg font-semibold mb-4">Топ за 24 часа</h3>
-                    <div class="space-y-3">
-                        {% if daily_leaders %}
-                            {% for leader in daily_leaders %}
-                                <div class="flex items-center justify-between p-2 bg-gray-700 rounded text-sm transition-transform duration-200 hover:scale-105">
+            <!-- Правая колонка: таблицы лидеров -->
+            <div class="leaderboard-sidebar sm:w-72 hidden sm:block animate-slide-in" id="leaderboard-sidebar">
+                <!-- Таблица лидеров за 24 часа -->
+                {% if daily_leaders %}
+                    <div class="block-background p-4 sm:p-6 mb-4 sm:mb-6 animate-slide-in" id="daily-leaderboard">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-lg sm:text-xl font-semibold flex items-center">
+                                <i class="fas fa-trophy mr-2 text-blue-400"></i>Топ за 24 часа
+                            </h2>
+                            <button onclick="toggleLeaderboardFullscreen()" class="text-gray-400 hover:text-gray-300 transition-colors duration-200">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                        </div>
+                        <div class="space-y-3">
+                            {% set is_user_in_top = false %}
+                            {% for leader in daily_leaders[:5] %}
+                                {% if current_user.is_authenticated and leader.username == current_user.username %}
+                                    {% set is_user_in_top = true %}
+                                {% endif %}
+                                <div class="flex items-center justify-between p-2 bg-gray-700 rounded text-sm sm:text-base transition-transform duration-200 hover:scale-105 {% if current_user.is_authenticated and leader.username == current_user.username %}bg-blue-600{% endif %}">
                                     <div class="flex items-center">
                                         <span class="w-6 h-6 {{ 'bg-yellow-500' if loop.index == 1 else 'bg-gray-500' if loop.index == 2 else 'bg-amber-800' if loop.index == 3 else '' }} rounded-full flex items-center justify-center text-xs font-bold mr-3">{{ loop.index }}</span>
-                                        <span>{{ leader.username }}</span>
+                                        <span class="truncate">{{ leader.username }}</span>
                                     </div>
                                     <span class="font-bold">{{ leader.total_score }} очков</span>
                                 </div>
-                            {% else %}
-                                <p class="text-sm text-gray-400">Нет результатов за последние 24 часа</p>
                             {% endfor %}
-                        {% endif %}
+                            {% if current_user.is_authenticated and not is_user_in_top and user_daily_rank is defined and user_daily_rank > 5 %}
+                                <div class="flex items-center justify-between p-2 bg-blue-600 rounded text-sm sm:text-base transition-transform duration-200 hover:scale-105">
+                                    <div class="flex items-center">
+                                        <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold mr-3">{{ user_daily_rank }}</span>
+                                        <span class="truncate">{{ current_user.username }}</span>
+                                    </div>
+                                    <span class="font-bold">{{ current_user.score }} очков</span>
+                                </div>
+                            {% endif %}
+                        </div>
                     </div>
-                </div>
-                <div class="block-background p-4 rounded-lg animate-slide-in">
-                    <h3 class="text-base sm:text-lg font-semibold mb-4">Общий топ</h3>
-                    <div class="space-y-3">
-                        {% if leaders %}
-                            {% for leader in leaders %}
-                                <div class="flex items-center justify-between p-2 bg-gray-800 rounded text-sm transition-transform duration-200 hover:scale-105">
+                {% endif %}
+                <!-- Общая таблица лидеров -->
+                {% if leaders %}
+                    <div class="block-background p-4 sm:p-6 mb-4 sm:mb-6 animate-slide-in" id="leaderboard">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-lg sm:text-xl font-semibold flex items-center">
+                                <i class="fas fa-trophy mr-2 text-yellow-400"></i>Таблица лидеров
+                            </h2>
+                            <button onclick="toggleLeaderboardFullscreen()" class="text-gray-400 hover:text-gray-300 transition-colors duration-200">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                        </div>
+                        <div class="space-y-3">
+                            {% set is_user_in_top = false %}
+                            {% for leader in leaders[:5] %}
+                                {% if current_user.is_authenticated and leader.username == current_user.username %}
+                                    {% set is_user_in_top = true %}
+                                {% endif %}
+                                <div class="flex items-center justify-between p-2 bg-gray-700 rounded text-sm sm:text-base transition-transform duration-200 hover:scale-105 {% if current_user.is_authenticated and leader.username == current_user.username %}bg-blue-600{% endif %}">
                                     <div class="flex items-center">
                                         <span class="w-6 h-6 {{ 'bg-yellow-500' if loop.index == 1 else 'bg-gray-500' if loop.index == 2 else 'bg-amber-800' if loop.index == 3 else '' }} rounded-full flex items-center justify-center text-xs font-bold mr-3">{{ loop.index }}</span>
-                                        <span>{{ leader.username }}</span>
+                                        <span class="truncate">{{ leader.username }}</span>
                                     </div>
                                     <span class="font-bold">{{ leader.score }} очков</span>
                                 </div>
                             {% endfor %}
-                        {% endif %}
+                            {% if current_user.is_authenticated and not is_user_in_top and user_overall_rank is defined and user_overall_rank > 5 %}
+                                <div class="flex items-center justify-between p-2 bg-blue-600 rounded text-sm sm:text-base transition-transform duration-200 hover:scale-105">
+                                    <div class="flex items-center">
+                                        <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold mr-3">{{ user_overall_rank }}</span>
+                                        <span class="truncate">{{ current_user.username }}</span>
+                                    </div>
+                                    <span class="font-bold">{{ current_user.score }} очков</span>
+                                </div>
+                            {% endif %}
+                        </div>
                     </div>
+                {% endif %}
+            </div>
+        </div>
+        <!-- Полноэкранный чат -->
+        <div id="chat-fullscreen" class="chat-fullscreen hidden flex-col p-4">
+            <div class="chat-fullscreen-header flex justify-between items-center mb-4">
+                <button onclick="toggleChatFullscreen()" class="text-gray-400 hover:text-gray-300 transition-colors duration-200">
+                    <i class="fas fa-arrow-left"></i> Назад
+                </button>
+                <h2 class="text-lg sm:text-xl font-semibold">Чат сообщества</h2>
+                <div></div>
+            </div>
+            <div class="chat-messages block-background p-4 rounded-lg flex-1 overflow-y-auto animate-slide-in" id="chat-messages-fullscreen">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="p-2 bg-gray-700 rounded mb-2 text-sm transition-transform duration-200 hover:scale-105">
+                            <span class="font-bold">{{ message.username }}:</span>
+                            <p class="text-sm text-gray-300">{{ message.message }}</p>
+                            <span class="text-xs text-gray-400">{{ message.timestamp.strftime('%Y-%m-%d %H:%M') }}</span>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            {% if current_user.is_authenticated %}
+                <form id="chat-form-fullscreen" class="chat-input-form mt-4">
+                    <input type="text" id="chat-input-fullscreen" class="chat-input text-sm" placeholder="Введите сообщение..." required>
+                    <button type="submit" class="chat-send-btn bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </form>
+            {% endif %}
+        </div>
+        <!-- Полноэкранная таблица лидеров -->
+        <div id="leaderboard-fullscreen" class="leaderboard-fullscreen hidden p-4">
+            <div class="flex justify-between items-center mb-4">
+                <button onclick="toggleLeaderboardFullscreen()" class="text-gray-400 hover:text-gray-300 transition-colors duration-200">
+                    <i class="fas fa-arrow-left"></i> Назад
+                </button>
+                <h2 class="text-lg sm:text-xl font-semibold">Таблица лидеров</h2>
+                <div></div>
+            </div>
+            <div class="block-background p-4 rounded-lg mb-4 animate-slide-in">
+                <h3 class="text-base sm:text-lg font-semibold mb-4">Топ за 24 часа</h3>
+                <div class="space-y-3">
+                    {% set is_user_in_top = false %}
+                    {% if daily_leaders %}
+                        {% for leader in daily_leaders[:5] %}
+                            {% if current_user.is_authenticated and leader.username == current_user.username %}
+                                {% set is_user_in_top = true %}
+                            {% endif %}
+                            <div class="flex items-center justify-between p-2 bg-gray-700 rounded text-sm transition-transform duration-200 hover:scale-105 {% if current_user.is_authenticated and leader.username == current_user.username %}bg-blue-600{% endif %}">
+                                <div class="flex items-center">
+                                    <span class="w-6 h-6 {{ 'bg-yellow-500' if loop.index == 1 else 'bg-gray-500' if loop.index == 2 else 'bg-amber-800' if loop.index == 3 else '' }} rounded-full flex items-center justify-center text-xs font-bold mr-3">{{ loop.index }}</span>
+                                    <span class="truncate">{{ leader.username }}</span>
+                                </div>
+                                <span class="font-bold">{{ leader.total_score }} очков</span>
+                            </div>
+                        {% endfor %}
+                        {% if current_user.is_authenticated and not is_user_in_top and user_daily_rank is defined and user_daily_rank > 5 %}
+                            <div class="flex items-center justify-between p-2 bg-blue-600 rounded text-sm transition-transform duration-200 hover:scale-105">
+                                <div class="flex items-center">
+                                    <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold mr-3">{{ user_daily_rank }}</span>
+                                    <span class="truncate">{{ current_user.username }}</span>
+                                </div>
+                                <span class="font-bold">{{ current_user.score }} очков</span>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <p class="text-sm text-gray-400">Нет результатов за последние 24 часа</p>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="block-background p-4 rounded-lg animate-slide-in">
+                <h3 class="text-base sm:text-lg font-semibold mb-4">Общий топ</h3>
+                <div class="space-y-3">
+                    {% set is_user_in_top = false %}
+                    {% if leaders %}
+                        {% for leader in leaders[:5] %}
+                            {% if current_user.is_authenticated and leader.username == current_user.username %}
+                                {% set is_user_in_top = true %}
+                            {% endif %}
+                            <div class="flex items-center justify-between p-2 bg-gray-700 rounded text-sm transition-transform duration-200 hover:scale-105 {% if current_user.is_authenticated and leader.username == current_user.username %}bg-blue-600{% endif %}">
+                                <div class="flex items-center">
+                                    <span class="w-6 h-6 {{ 'bg-yellow-500' if loop.index == 1 else 'bg-gray-500' if loop.index == 2 else 'bg-amber-800' if loop.index == 3 else '' }} rounded-full flex items-center justify-center text-xs font-bold mr-3">{{ loop.index }}</span>
+                                    <span class="truncate">{{ leader.username }}</span>
+                                </div>
+                                <span class="font-bold">{{ leader.score }} очков</span>
+                            </div>
+                        {% endfor %}
+                        {% if current_user.is_authenticated and not is_user_in_top and user_overall_rank is defined and user_overall_rank > 5 %}
+                            <div class="flex items-center justify-between p-2 bg-blue-600 rounded text-sm transition-transform duration-200 hover:scale-105">
+                                <div class="flex items-center">
+                                    <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold mr-3">{{ user_overall_rank }}</span>
+                                    <span class="truncate">{{ current_user.username }}</span>
+                                </div>
+                                <span class="font-bold">{{ current_user.score }} очков</span>
+                            </div>
+                        {% endif %}
+                    {% endif %}
                 </div>
             </div>
         </div>
-        <footer class="mt-8 py-4 text-center text-gray-400 text-sm block-background">
-            <p>© {{ current_year }} MusicQuiz. Все права зарезервированы.</p>
-        </footer>
     </div>
+    <!-- Футер -->
+    <footer class="w-full py-4 text-center text-gray-400 text-sm bg-gray-900 z-10">
+        <p>© {{ current_year }} MusicQuiz. Все права зарезервированы.</p>
+    </footer>
 
     <script>
         const socket = io();
@@ -281,20 +343,17 @@
             const chatFullscreen = document.getElementById('chat-fullscreen');
             const sidebar = document.getElementById('sidebar');
             const mainContent = document.getElementById('main-content');
-            const filters = document.getElementById('filters');
-            const footer = document.querySelector('footer');
+            const leaderboardSidebar = document.getElementById('leaderboard-sidebar');
             if (chatFullscreen.classList.contains('hidden')) {
                 chatFullscreen.classList.remove('hidden');
                 sidebar.classList.add('hidden');
                 mainContent.classList.add('hidden');
-                filters.classList.add('hidden');
-                footer.classList.add('hidden');
+                leaderboardSidebar.classList.add('hidden');
             } else {
                 chatFullscreen.classList.add('hidden');
                 sidebar.classList.remove('hidden');
                 mainContent.classList.remove('hidden');
-                filters.classList.remove('hidden');
-                footer.classList.remove('hidden');
+                leaderboardSidebar.classList.remove('hidden');
             }
             const chatMessagesFullscreen = document.getElementById('chat-messages-fullscreen');
             if (chatMessagesFullscreen) {
@@ -306,32 +365,29 @@
             const leaderboardFullscreen = document.getElementById('leaderboard-fullscreen');
             const sidebar = document.getElementById('sidebar');
             const mainContent = document.getElementById('main-content');
-            const filters = document.getElementById('filters');
-            const footer = document.querySelector('footer');
+            const leaderboardSidebar = document.getElementById('leaderboard-sidebar');
             if (leaderboardFullscreen.classList.contains('hidden')) {
                 leaderboardFullscreen.classList.remove('hidden');
                 sidebar.classList.add('hidden');
                 mainContent.classList.add('hidden');
-                filters.classList.add('hidden');
-                footer.classList.add('hidden');
+                leaderboardSidebar.classList.add('hidden');
             } else {
                 leaderboardFullscreen.classList.add('hidden');
                 sidebar.classList.remove('hidden');
                 mainContent.classList.remove('hidden');
-                filters.classList.remove('hidden');
-                footer.classList.remove('hidden');
+                leaderboardSidebar.classList.remove('hidden');
             }
         }
 
         document.getElementById('sidebar-toggle').addEventListener('click', () => {
             const sidebar = document.getElementById('sidebar');
-            const filters = document.getElementById('filters');
+            const leaderboardSidebar = document.getElementById('leaderboard-sidebar');
             if (sidebar.classList.contains('hidden')) {
                 sidebar.classList.remove('hidden');
-                filters.classList.remove('hidden');
+                leaderboardSidebar.classList.remove('hidden');
             } else {
                 sidebar.classList.add('hidden');
-                filters.classList.add('hidden');
+                leaderboardSidebar.classList.add('hidden');
             }
         });
 
