@@ -114,28 +114,17 @@
                             </button>
                         </div>
                         <div class="space-y-3">
-                            {% set is_user_in_top = false %}
-                            {% for leader in daily_leaders[:5] %}
-                                {% if current_user.is_authenticated and leader.username == current_user.username %}
-                                    {% set is_user_in_top = true %}
-                                {% endif %}
-                                <div class="flex items-center justify-between p-2 bg-gray-700 rounded text-sm sm:text-base transition-transform duration-200 hover:scale-105 {% if current_user.is_authenticated and leader.username == current_user.username %}bg-blue-600{% endif %}">
+                            {% set display_leaders = daily_leaders[:5] if not (current_user.is_authenticated and user_daily_rank is defined and user_daily_rank > 5) else daily_leaders[:4] + [{'username': current_user.username, 'total_score': current_user.score}] %}
+                            {% for leader in display_leaders %}
+                                {% set rank = loop.index if loop.index <= 5 and (not current_user.is_authenticated or leader.username != current_user.username) else user_daily_rank %}
+                                <div class="flex items-center justify-between p-2 rounded text-sm sm:text-base transition-transform duration-200 hover:scale-105 {% if current_user.is_authenticated and leader.username == current_user.username %}bg-blue-600{% else %}bg-gray-700{% endif %}">
                                     <div class="flex items-center">
-                                        <span class="w-6 h-6 {{ 'bg-yellow-500' if loop.index == 1 else 'bg-gray-500' if loop.index == 2 else 'bg-amber-800' if loop.index == 3 else '' }} rounded-full flex items-center justify-center text-xs font-bold mr-3">{{ loop.index }}</span>
+                                        <span class="w-6 h-6 {{ 'bg-yellow-500' if rank == 1 else 'bg-gray-500' if rank == 2 else 'bg-amber-800' if rank == 3 else 'bg-gray-700' }} rounded-full flex items-center justify-center text-xs font-bold mr-3">{{ rank }}</span>
                                         <span class="truncate">{{ leader.username }}</span>
                                     </div>
                                     <span class="font-bold">{{ leader.total_score }} очков</span>
                                 </div>
                             {% endfor %}
-                            {% if current_user.is_authenticated and not is_user_in_top and user_daily_rank is defined and user_daily_rank > 5 %}
-                                <div class="flex items-center justify-between p-2 bg-blue-600 rounded text-sm sm:text-base transition-transform duration-200 hover:scale-105">
-                                    <div class="flex items-center">
-                                        <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold mr-3">{{ user_daily_rank }}</span>
-                                        <span class="truncate">{{ current_user.username }}</span>
-                                    </div>
-                                    <span class="font-bold">{{ current_user.score }} очков</span>
-                                </div>
-                            {% endif %}
                         </div>
                     </div>
                 {% endif %}
@@ -151,28 +140,17 @@
                             </button>
                         </div>
                         <div class="space-y-3">
-                            {% set is_user_in_top = false %}
-                            {% for leader in leaders[:5] %}
-                                {% if current_user.is_authenticated and leader.username == current_user.username %}
-                                    {% set is_user_in_top = true %}
-                                {% endif %}
-                                <div class="flex items-center justify-between p-2 bg-gray-700 rounded text-sm sm:text-base transition-transform duration-200 hover:scale-105 {% if current_user.is_authenticated and leader.username == current_user.username %}bg-blue-600{% endif %}">
+                            {% set display_leaders = leaders[:5] if not (current_user.is_authenticated and user_overall_rank is defined and user_overall_rank > 5) else leaders[:4] + [{'username': current_user.username, 'score': current_user.score}] %}
+                            {% for leader in display_leaders %}
+                                {% set rank = loop.index if loop.index <= 5 and (not current_user.is_authenticated or leader.username != current_user.username) else user_overall_rank %}
+                                <div class="flex items-center justify-between p-2 rounded text-sm sm:text-base transition-transform duration-200 hover:scale-105 {% if current_user.is_authenticated and leader.username == current_user.username %}bg-blue-600{% else %}bg-gray-700{% endif %}">
                                     <div class="flex items-center">
-                                        <span class="w-6 h-6 {{ 'bg-yellow-500' if loop.index == 1 else 'bg-gray-500' if loop.index == 2 else 'bg-amber-800' if loop.index == 3 else '' }} rounded-full flex items-center justify-center text-xs font-bold mr-3">{{ loop.index }}</span>
+                                        <span class="w-6 h-6 {{ 'bg-yellow-500' if rank == 1 else 'bg-gray-500' if rank == 2 else 'bg-amber-800' if rank == 3 else 'bg-gray-700' }} rounded-full flex items-center justify-center text-xs font-bold mr-3">{{ rank }}</span>
                                         <span class="truncate">{{ leader.username }}</span>
                                     </div>
                                     <span class="font-bold">{{ leader.score }} очков</span>
                                 </div>
                             {% endfor %}
-                            {% if current_user.is_authenticated and not is_user_in_top and user_overall_rank is defined and user_overall_rank > 5 %}
-                                <div class="flex items-center justify-between p-2 bg-blue-600 rounded text-sm sm:text-base transition-transform duration-200 hover:scale-105">
-                                    <div class="flex items-center">
-                                        <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold mr-3">{{ user_overall_rank }}</span>
-                                        <span class="truncate">{{ current_user.username }}</span>
-                                    </div>
-                                    <span class="font-bold">{{ current_user.score }} очков</span>
-                                </div>
-                            {% endif %}
                         </div>
                     </div>
                 {% endif %}
@@ -219,29 +197,18 @@
             <div class="block-background p-4 rounded-lg mb-4 animate-slide-in">
                 <h3 class="text-base sm:text-lg font-semibold mb-4">Топ за 24 часа</h3>
                 <div class="space-y-3">
-                    {% set is_user_in_top = false %}
                     {% if daily_leaders %}
-                        {% for leader in daily_leaders[:5] %}
-                            {% if current_user.is_authenticated and leader.username == current_user.username %}
-                                {% set is_user_in_top = true %}
-                            {% endif %}
-                            <div class="flex items-center justify-between p-2 bg-gray-700 rounded text-sm transition-transform duration-200 hover:scale-105 {% if current_user.is_authenticated and leader.username == current_user.username %}bg-blue-600{% endif %}">
+                        {% set display_leaders = daily_leaders[:5] if not (current_user.is_authenticated and user_daily_rank is defined and user_daily_rank > 5) else daily_leaders[:4] + [{'username': current_user.username, 'total_score': current_user.score}] %}
+                        {% for leader in display_leaders %}
+                            {% set rank = loop.index if loop.index <= 5 and (not current_user.is_authenticated or leader.username != current_user.username) else user_daily_rank %}
+                            <div class="flex items-center justify-between p-2 rounded text-sm transition-transform duration-200 hover:scale-105 {% if current_user.is_authenticated and leader.username == current_user.username %}bg-blue-600{% else %}bg-gray-700{% endif %}">
                                 <div class="flex items-center">
-                                    <span class="w-6 h-6 {{ 'bg-yellow-500' if loop.index == 1 else 'bg-gray-500' if loop.index == 2 else 'bg-amber-800' if loop.index == 3 else '' }} rounded-full flex items-center justify-center text-xs font-bold mr-3">{{ loop.index }}</span>
+                                    <span class="w-6 h-6 {{ 'bg-yellow-500' if rank == 1 else 'bg-gray-500' if rank == 2 else 'bg-amber-800' if rank == 3 else 'bg-gray-700' }} rounded-full flex items-center justify-center text-xs font-bold mr-3">{{ rank }}</span>
                                     <span class="truncate">{{ leader.username }}</span>
                                 </div>
                                 <span class="font-bold">{{ leader.total_score }} очков</span>
                             </div>
                         {% endfor %}
-                        {% if current_user.is_authenticated and not is_user_in_top and user_daily_rank is defined and user_daily_rank > 5 %}
-                            <div class="flex items-center justify-between p-2 bg-blue-600 rounded text-sm transition-transform duration-200 hover:scale-105">
-                                <div class="flex items-center">
-                                    <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold mr-3">{{ user_daily_rank }}</span>
-                                    <span class="truncate">{{ current_user.username }}</span>
-                                </div>
-                                <span class="font-bold">{{ current_user.score }} очков</span>
-                            </div>
-                        {% endif %}
                     {% else %}
                         <p class="text-sm text-gray-400">Нет результатов за последние 24 часа</p>
                     {% endif %}
@@ -250,29 +217,18 @@
             <div class="block-background p-4 rounded-lg animate-slide-in">
                 <h3 class="text-base sm:text-lg font-semibold mb-4">Общий топ</h3>
                 <div class="space-y-3">
-                    {% set is_user_in_top = false %}
                     {% if leaders %}
-                        {% for leader in leaders[:5] %}
-                            {% if current_user.is_authenticated and leader.username == current_user.username %}
-                                {% set is_user_in_top = true %}
-                            {% endif %}
-                            <div class="flex items-center justify-between p-2 bg-gray-700 rounded text-sm transition-transform duration-200 hover:scale-105 {% if current_user.is_authenticated and leader.username == current_user.username %}bg-blue-600{% endif %}">
+                        {% set display_leaders = leaders[:5] if not (current_user.is_authenticated and user_overall_rank is defined and user_overall_rank > 5) else leaders[:4] + [{'username': current_user.username, 'score': current_user.score}] %}
+                        {% for leader in display_leaders %}
+                            {% set rank = loop.index if loop.index <= 5 and (not current_user.is_authenticated or leader.username != current_user.username) else user_overall_rank %}
+                            <div class="flex items-center justify-between p-2 rounded text-sm transition-transform duration-200 hover:scale-105 {% if current_user.is_authenticated and leader.username == current_user.username %}bg-blue-600{% else %}bg-gray-700{% endif %}">
                                 <div class="flex items-center">
-                                    <span class="w-6 h-6 {{ 'bg-yellow-500' if loop.index == 1 else 'bg-gray-500' if loop.index == 2 else 'bg-amber-800' if loop.index == 3 else '' }} rounded-full flex items-center justify-center text-xs font-bold mr-3">{{ loop.index }}</span>
+                                    <span class="w-6 h-6 {{ 'bg-yellow-500' if rank == 1 else 'bg-gray-500' if rank == 2 else 'bg-amber-800' if rank == 3 else 'bg-gray-700' }} rounded-full flex items-center justify-center text-xs font-bold mr-3">{{ rank }}</span>
                                     <span class="truncate">{{ leader.username }}</span>
                                 </div>
                                 <span class="font-bold">{{ leader.score }} очков</span>
                             </div>
                         {% endfor %}
-                        {% if current_user.is_authenticated and not is_user_in_top and user_overall_rank is defined and user_overall_rank > 5 %}
-                            <div class="flex items-center justify-between p-2 bg-blue-600 rounded text-sm transition-transform duration-200 hover:scale-105">
-                                <div class="flex items-center">
-                                    <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold mr-3">{{ user_overall_rank }}</span>
-                                    <span class="truncate">{{ current_user.username }}</span>
-                                </div>
-                                <span class="font-bold">{{ current_user.score }} очков</span>
-                            </div>
-                        {% endif %}
                     {% endif %}
                 </div>
             </div>
@@ -286,7 +242,6 @@
     <script>
         const socket = io();
 
-        // Функция для настройки чата
         function setupChatForm(formId, inputId, messagesId) {
             const chatForm = document.getElementById(formId);
             const chatInput = document.getElementById(inputId);
