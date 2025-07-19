@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 
-{% block title %}Чат{% endblock %}
+{% block title %}{{ t['Community Chat'] }}{% endblock %}
 
 {% block content %}
 <div class="chat-fullscreen flex flex-col p-4 sm:p-6">
     <div class="chat-fullscreen-header flex justify-between items-center mb-4">
         <a href="{{ url_for('index') }}" class="text-blue-400 hover:text-blue-300 transition-colors duration-200">
-            <i class="fas fa-arrow-left mr-2"></i>Назад
+            <i class="fas fa-arrow-left mr-2"></i>{{ t['Back'] }}
         </a>
-        <h2 class="text-lg sm:text-xl font-semibold">Чат сообщества</h2>
+        <h2 class="text-lg sm:text-xl font-semibold">{{ t['Community Chat'] }}</h2>
         <div></div>
     </div>
     <div class="chat-messages block-background p-4 rounded-lg flex-1 overflow-y-auto animate-slide-in" id="chat-messages">
@@ -22,7 +22,7 @@
     </div>
     {% if current_user.is_authenticated %}
         <form id="chat-form" class="chat-input-form mt-4">
-            <input type="text" id="chat-input" class="chat-input text-sm" placeholder="Введите сообщение..." required>
+            <input type="text" id="chat-input" class="chat-input text-sm" placeholder="{{ t['Type a message...'] }}" required>
             <button type="submit" class="chat-send-btn bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
                 <i class="fas fa-paper-plane"></i>
             </button>
@@ -32,8 +32,8 @@
 
 <script>
     const socket = io();
-    setupChatForm('chat-form', 'chat-input', 'chat-messages');
-    setupChatMessages('chat-messages');
+    const translations = {{ t | tojson }};
+    let isChatInitialized = false;
 
     function setupChatForm(formId, inputId, messagesId) {
         const chatForm = document.getElementById(formId);
@@ -65,7 +65,8 @@
 
     function setupChatMessages(messagesId) {
         const chatMessages = document.getElementById(messagesId);
-        if (chatMessages) {
+        if (chatMessages && !chatMessages.dataset.listenerAdded) {
+            chatMessages.dataset.listenerAdded = 'true';
             socket.on('chat_message', (data) => {
                 if (chatMessages.offsetParent !== null) {
                     const messageElement = document.createElement('div');
@@ -73,7 +74,7 @@
                     messageElement.innerHTML = `
                         <span class="font-bold">${data.username}:</span>
                         <p class="text-sm text-gray-300">${data.message}</p>
-                        <span class="text-xs text-gray-400">${new Date(data.timestamp).toLocaleString('ru-RU')}</span>
+                        <span class="text-xs text-gray-400">${new Date(data.timestamp).toLocaleString('{{ get_locale() }}-RU')}</span>
                     `;
                     chatMessages.appendChild(messageElement);
                     chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -81,5 +82,15 @@
             });
         }
     }
+
+    function initializeChat() {
+        if (!isChatInitialized) {
+            setupChatForm('chat-form', 'chat-input', 'chat-messages');
+            setupChatMessages('chat-messages');
+            isChatInitialized = true;
+        }
+    }
+
+    initializeChat();
 </script>
 {% endblock %}

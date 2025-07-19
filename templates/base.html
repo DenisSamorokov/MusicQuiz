@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="{{ get_locale() }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}{% endblock %} - MusicQuiz</title>
+    <title>{% block title %}{% endblock %} - {{ t['MusicQuiz'] }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='1.0') }}">
@@ -20,19 +20,34 @@
                 </button>
                 <a href="{{ url_for('index') }}">
                     <h1 class="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 bg-clip-text text-transparent">
-                        <i class="fas fa-music mr-2"></i>MusicQuiz
+                        <i class="fas fa-music mr-2"></i>{{ t['MusicQuiz'] }}
                     </h1>
                 </a>
             </div>
             <div class="flex items-center space-x-4">
+                <!-- Переключатель языка -->
+                <div class="flex space-x-2">
+                    {% for lang in config['SUPPORTED_LOCALES'] %}
+                        <a href="{{ url_for('set_language', lang=lang) }}"
+                           class="px-2 py-1 rounded text-sm font-medium transition-all duration-200
+                                  {% if lang == get_locale() %}bg-gradient-to-r from-blue-500 to-purple-600 text-white{% else %}text-gray-400 hover:bg-gray-700{% endif %}"
+                           title="{{ lang.upper() }}">
+                            {% if lang == 'ru' %}🇷🇺{% elif lang == 'en' %}🇬🇧{% elif lang == 'es' %}🇪🇸{% endif %}
+                            {{ lang.upper() }}
+                        </a>
+                    {% endfor %}
+                </div>
                 {% if current_user.is_authenticated %}
-                    <span class="text-sm font-medium text-gray-200">{{ current_user.username }}</span>
-                    <a href="{{ url_for('logout') }}" class="text-red-400 hover:text-red-300 transition-colors duration-200">
-                        <i class="fas fa-sign-out-alt"></i>
-                    </a>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-sm font-medium text-gray-200">{{ current_user.username }}</span>
+                        <a href="{{ url_for('logout') }}" class="flex items-center space-x-1 text-red-400 hover:text-red-300 transition-colors duration-200">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>{{ t['Logout'] }}</span>
+                        </a>
+                    </div>
                 {% else %}
-                    <a href="{{ url_for('login') }}" class="text-blue-400 hover:text-blue-300 transition-colors duration-200">Войти</a>
-                    <a href="{{ url_for('register') }}" class="text-blue-400 hover:text-blue-300 transition-colors duration-200">Регистрация</a>
+                    <a href="{{ url_for('login') }}" class="text-blue-400 hover:text-blue-300 transition-colors duration-200">{{ t['Login'] }}</a>
+                    <a href="{{ url_for('register') }}" class="text-blue-400 hover:text-blue-300 transition-colors duration-200">{{ t['Register'] }}</a>
                 {% endif %}
             </div>
         </header>
@@ -42,23 +57,23 @@
                 <!-- Фильтры -->
                 <div class="block-background p-4 sm:p-6 mb-4 sm:mb-6 animate-slide-in">
                     <h2 class="text-lg sm:text-xl font-semibold mb-4 flex items-center">
-                        <i class="fas fa-filter mr-2 text-blue-400"></i>Фильтры
+                        <i class="fas fa-filter mr-2 text-blue-400"></i>{{ t['Filters'] }}
                     </h2>
                     <form id="filter-form" method="POST" action="/set_filter">
                         <div class="filter-group">
-                            <label for="style-select" class="block mb-2 text-sm sm:text-base">Жанр</label>
+                            <label for="style-select" class="block mb-2 text-sm sm:text-base">{{ t['Genre'] }}</label>
                             <select id="style-select" name="style" class="filter-select w-full text-sm sm:text-base transition-colors duration-200">
-                                <option value="any" {% if session['selected_style'] == 'any' %}selected{% endif %}>Любой</option>
-                                <option value="Pop" {% if session['selected_style'] == 'Pop' %}selected{% endif %}>Pop</option>
-                                <option value="Rock" {% if session['selected_style'] == 'Rock' %}selected{% endif %}>Rock</option>
-                                <option value="Rap_Hip Hop" {% if session['selected_style'] == 'Rap_Hip Hop' %}selected{% endif %}>Rap/Hip Hop</option>
-                                <option value="R_B" {% if session['selected_style'] == 'R_B' %}selected{% endif %}>R&B</option>
-                                <option value="Dance" {% if session['selected_style'] == 'Dance' %}selected{% endif %}>Dance</option>
-                                <option value="Electro" {% if session['selected_style'] == 'Electro' %}selected{% endif %}>Electro</option>
-                                <option value="Soul _ Funk" {% if session['selected_style'] == 'Soul _ Funk' %}selected{% endif %}>Soul & Funk</option>
+                                <option value="any" {% if session['selected_style'] == 'any' %}selected{% endif %}>{{ t['Any'] }}</option>
+                                <option value="Pop" {% if session['selected_style'] == 'Pop' %}selected{% endif %}>{{ t['Pop'] }}</option>
+                                <option value="Rock" {% if session['selected_style'] == 'Rock' %}selected{% endif %}>{{ t['Rock'] }}</option>
+                                <option value="Rap_Hip Hop" {% if session['selected_style'] == 'Rap_Hip Hop' %}selected{% endif %}>{{ t['Rap_Hip Hop'] }}</option>
+                                <option value="R_B" {% if session['selected_style'] == 'R_B' %}selected{% endif %}>{{ t['R_B'] }}</option>
+                                <option value="Dance" {% if session['selected_style'] == 'Dance' %}selected{% endif %}>{{ t['Dance'] }}</option>
+                                <option value="Electro" {% if session['selected_style'] == 'Electro' %}selected{% endif %}>{{ t['Electro'] }}</option>
+                                <option value="Soul _ Funk" {% if session['selected_style'] == 'Soul _ Funk' %}selected{% endif %}>{{ t['Soul _ Funk'] }}</option>
                             </select>
                         </div>
-                        <button type="submit" class="apply-btn w-full mt-2 text-sm sm:text-base bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 transition-all duration-200">Применить фильтр</button>
+                        <button type="submit" class="apply-btn w-full mt-2 text-sm sm:text-base bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 transition-all duration-200">{{ t['Apply Filter'] }}</button>
                     </form>
                 </div>
                 <!-- Чат -->
@@ -66,7 +81,7 @@
                     <div class="flex justify-between items-center mb-4">
                         <h2 class="text-lg sm:text-xl font-semibold flex items-center">
                             <a href="{{ url_for('chat') }}" class="flex items-center">
-                                <i class="fas fa-comments mr-2 text-blue-400"></i>Чат сообщества
+                                <i class="fas fa-comments mr-2 text-blue-400"></i>{{ t['Community Chat'] }}
                             </a>
                         </h2>
                         <button onclick="toggleChatFullscreen()" class="text-gray-400 hover:text-gray-300 transition-colors duration-200">
@@ -82,13 +97,13 @@
                                     <span class="text-xs text-gray-400">{{ message.timestamp.strftime('%Y-%m-%d %H:%M') }}</span>
                                 </div>
                             {% else %}
-                                <p class="text-sm text-gray-400">Чат пуст. Напишите первое сообщение!</p>
+                                <p class="text-sm text-gray-400">{{ t['Chat is empty. Write the first message!'] }}</p>
                             {% endfor %}
                         {% endif %}
                     </div>
                     {% if current_user.is_authenticated %}
                         <form id="chat-form-preview" class="chat-input-form">
-                            <input type="text" id="chat-input-preview" class="chat-input text-sm" placeholder="Введите сообщение..." required>
+                            <input type="text" id="chat-input-preview" class="chat-input text-sm" placeholder="{{ t['Type a message...'] }}" required>
                             <button type="submit" class="chat-send-btn bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
                                 <i class="fas fa-paper-plane"></i>
                             </button>
@@ -107,7 +122,7 @@
                     <div class="block-background p-4 sm:p-6 mb-4 sm:mb-6 animate-slide-in" id="daily-leaderboard">
                         <div class="flex justify-between items-center mb-4">
                             <h2 class="text-lg sm:text-xl font-semibold flex items-center">
-                                <i class="fas fa-trophy mr-2 text-blue-400"></i>Топ за 24 часа
+                                <i class="fas fa-trophy mr-2 text-blue-400"></i>{{ t['Top 24 Hours'] }}
                             </h2>
                             <button onclick="toggleLeaderboardFullscreen()" class="text-gray-400 hover:text-gray-300 transition-colors duration-200">
                                 <i class="fas fa-expand"></i>
@@ -122,7 +137,7 @@
                                         <span class="w-6 h-6 {{ 'bg-yellow-500' if rank == 1 else 'bg-gray-500' if rank == 2 else 'bg-amber-800' if rank == 3 else 'bg-gray-700' }} rounded-full flex items-center justify-center text-xs font-bold mr-3">{{ rank }}</span>
                                         <span class="truncate">{{ leader.username }}</span>
                                     </div>
-                                    <span class="font-bold">{{ leader.total_score }} очков</span>
+                                    <span class="font-bold">{{ leader.total_score }} {{ t['points'] }}</span>
                                 </div>
                             {% endfor %}
                         </div>
@@ -133,7 +148,7 @@
                     <div class="block-background p-4 sm:p-6 mb-4 sm:mb-6 animate-slide-in" id="leaderboard">
                         <div class="flex justify-between items-center mb-4">
                             <h2 class="text-lg sm:text-xl font-semibold flex items-center">
-                                <i class="fas fa-trophy mr-2 text-yellow-400"></i>Таблица лидеров
+                                <i class="fas fa-trophy mr-2 text-yellow-400"></i>{{ t['Leaderboard'] }}
                             </h2>
                             <button onclick="toggleLeaderboardFullscreen()" class="text-gray-400 hover:text-gray-300 transition-colors duration-200">
                                 <i class="fas fa-expand"></i>
@@ -148,7 +163,7 @@
                                         <span class="w-6 h-6 {{ 'bg-yellow-500' if rank == 1 else 'bg-gray-500' if rank == 2 else 'bg-amber-800' if rank == 3 else 'bg-gray-700' }} rounded-full flex items-center justify-center text-xs font-bold mr-3">{{ rank }}</span>
                                         <span class="truncate">{{ leader.username }}</span>
                                     </div>
-                                    <span class="font-bold">{{ leader.score }} очков</span>
+                                    <span class="font-bold">{{ leader.score }} {{ t['points'] }}</span>
                                 </div>
                             {% endfor %}
                         </div>
@@ -160,9 +175,9 @@
         <div id="chat-fullscreen" class="chat-fullscreen hidden flex-col p-4">
             <div class="chat-fullscreen-header flex justify-between items-center mb-4">
                 <button onclick="toggleChatFullscreen()" class="text-gray-400 hover:text-gray-300 transition-colors duration-200">
-                    <i class="fas fa-arrow-left"></i> Назад
+                    <i class="fas fa-arrow-left"></i> {{ t['Back'] }}
                 </button>
-                <h2 class="text-lg sm:text-xl font-semibold">Чат сообщества</h2>
+                <h2 class="text-lg sm:text-xl font-semibold">{{ t['Community Chat'] }}</h2>
                 <div></div>
             </div>
             <div class="chat-messages block-background p-4 rounded-lg flex-1 overflow-y-auto animate-slide-in" id="chat-messages-fullscreen">
@@ -178,7 +193,7 @@
             </div>
             {% if current_user.is_authenticated %}
                 <form id="chat-form-fullscreen" class="chat-input-form mt-4">
-                    <input type="text" id="chat-input-fullscreen" class="chat-input text-sm" placeholder="Введите сообщение..." required>
+                    <input type="text" id="chat-input-fullscreen" class="chat-input text-sm" placeholder="{{ t['Type a message...'] }}" required>
                     <button type="submit" class="chat-send-btn bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
                         <i class="fas fa-paper-plane"></i>
                     </button>
@@ -189,13 +204,13 @@
         <div id="leaderboard-fullscreen" class="leaderboard-fullscreen hidden p-4">
             <div class="flex justify-between items-center mb-4">
                 <button onclick="toggleLeaderboardFullscreen()" class="text-gray-400 hover:text-gray-300 transition-colors duration-200">
-                    <i class="fas fa-arrow-left"></i> Назад
+                    <i class="fas fa-arrow-left"></i> {{ t['Back'] }}
                 </button>
-                <h2 class="text-lg sm:text-xl font-semibold">Таблица лидеров</h2>
+                <h2 class="text-lg sm:text-xl font-semibold">{{ t['Leaderboard'] }}</h2>
                 <div></div>
             </div>
             <div class="block-background p-4 rounded-lg mb-4 animate-slide-in">
-                <h3 class="text-base sm:text-lg font-semibold mb-4">Топ за 24 часа</h3>
+                <h3 class="text-base sm:text-lg font-semibold mb-4">{{ t['Top 24 Hours'] }}</h3>
                 <div class="space-y-3">
                     {% if daily_leaders %}
                         {% set display_leaders = daily_leaders[:5] if not (current_user.is_authenticated and user_daily_rank is defined and user_daily_rank > 5) else daily_leaders[:4] + [{'username': current_user.username, 'total_score': current_user.score}] %}
@@ -206,16 +221,16 @@
                                     <span class="w-6 h-6 {{ 'bg-yellow-500' if rank == 1 else 'bg-gray-500' if rank == 2 else 'bg-amber-800' if rank == 3 else 'bg-gray-700' }} rounded-full flex items-center justify-center text-xs font-bold mr-3">{{ rank }}</span>
                                     <span class="truncate">{{ leader.username }}</span>
                                 </div>
-                                <span class="font-bold">{{ leader.total_score }} очков</span>
+                                <span class="font-bold">{{ leader.total_score }} {{ t['points'] }}</span>
                             </div>
                         {% endfor %}
                     {% else %}
-                        <p class="text-sm text-gray-400">Нет результатов за последние 24 часа</p>
+                        <p class="text-sm text-gray-400">{{ t['No results for the last 24 hours'] }}</p>
                     {% endif %}
                 </div>
             </div>
             <div class="block-background p-4 rounded-lg animate-slide-in">
-                <h3 class="text-base sm:text-lg font-semibold mb-4">Общий топ</h3>
+                <h3 class="text-base sm:text-lg font-semibold mb-4">{{ t['Overall Top'] }}</h3>
                 <div class="space-y-3">
                     {% if leaders %}
                         {% set display_leaders = leaders[:5] if not (current_user.is_authenticated and user_overall_rank is defined and user_overall_rank > 5) else leaders[:4] + [{'username': current_user.username, 'score': current_user.score}] %}
@@ -226,7 +241,7 @@
                                     <span class="w-6 h-6 {{ 'bg-yellow-500' if rank == 1 else 'bg-gray-500' if rank == 2 else 'bg-amber-800' if rank == 3 else 'bg-gray-700' }} rounded-full flex items-center justify-center text-xs font-bold mr-3">{{ rank }}</span>
                                     <span class="truncate">{{ leader.username }}</span>
                                 </div>
-                                <span class="font-bold">{{ leader.score }} очков</span>
+                                <span class="font-bold">{{ leader.score }} {{ t['points'] }}</span>
                             </div>
                         {% endfor %}
                     {% endif %}
@@ -236,11 +251,13 @@
     </div>
     <!-- Футер -->
     <footer class="w-full py-4 text-center text-gray-400 text-sm bg-gray-900 z-10">
-        <p>© {{ current_year }} MusicQuiz. Все права зарезервированы.</p>
+        <p>©2025 {{ t['MusicQuiz'] }}. {{ t['All rights reserved.'] }}</p>
     </footer>
 
     <script>
         const socket = io();
+        const translations = {{ t | tojson }};
+        let isChatInitialized = false;
 
         function setupChatForm(formId, inputId, messagesId) {
             const chatForm = document.getElementById(formId);
@@ -272,7 +289,8 @@
 
         function setupChatMessages(messagesId) {
             const chatMessages = document.getElementById(messagesId);
-            if (chatMessages) {
+            if (chatMessages && !chatMessages.dataset.listenerAdded) {
+                chatMessages.dataset.listenerAdded = 'true';
                 socket.on('chat_message', (data) => {
                     if (chatMessages.offsetParent !== null) {
                         const messageElement = document.createElement('div');
@@ -280,7 +298,7 @@
                         messageElement.innerHTML = `
                             <span class="font-bold">${data.username}:</span>
                             <p class="text-sm text-gray-300">${data.message}</p>
-                            <span class="text-xs text-gray-400">${new Date(data.timestamp).toLocaleString('ru-RU')}</span>
+                            <span class="text-xs text-gray-400">${new Date(data.timestamp).toLocaleString('{{ get_locale() }}-RU')}</span>
                         `;
                         chatMessages.appendChild(messageElement);
                         chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -289,10 +307,17 @@
             }
         }
 
-        setupChatForm('chat-form-preview', 'chat-input-preview', 'chat-messages-preview');
-        setupChatForm('chat-form-fullscreen', 'chat-input-fullscreen', 'chat-messages-fullscreen');
-        setupChatMessages('chat-messages-preview');
-        setupChatMessages('chat-messages-fullscreen');
+        function initializeChat() {
+            if (!isChatInitialized) {
+                setupChatForm('chat-form-preview', 'chat-input-preview', 'chat-messages-preview');
+                setupChatForm('chat-form-fullscreen', 'chat-input-fullscreen', 'chat-messages-fullscreen');
+                setupChatMessages('chat-messages-preview');
+                setupChatMessages('chat-messages-fullscreen');
+                isChatInitialized = true;
+            }
+        }
+
+        initializeChat();
 
         function toggleChatFullscreen() {
             const chatFullscreen = document.getElementById('chat-fullscreen');
@@ -362,7 +387,7 @@
                       window.location.href = `/play/${difficulty}?style=${encodeURIComponent(data.style)}`;
                   }
               })
-              .catch(error => console.error('Ошибка фильтра:', error));
+              .catch(error => console.error(translations['Filter error:'], error));
         });
 
         window.addEventListener('load', () => {

@@ -1,24 +1,24 @@
 {% extends "base.html" %}
 
-{% block title %}Вход{% endblock %}
+{% block title %}{{ t['Login'] }}{% endblock %}
 
 {% block content %}
     <div class="text-center">
-        <h2 class="text-lg sm:text-xl font-semibold mb-4">Вход</h2>
+        <h2 class="text-lg sm:text-xl font-semibold mb-4">{{ t['Login'] }}</h2>
         {% if error %}
             <p class="text-red-400 mb-4 text-sm">{{ error }}</p>
         {% endif %}
         <form method="POST" class="max-w-full sm:max-w-sm mx-auto block-background p-4 sm:p-6 rounded-lg">
             <div class="mb-4">
-                <input type="text" name="username" placeholder="Имя пользователя" class="w-full p-2 rounded bg-gray-700 text-white text-sm sm:text-base" required>
+                <input type="text" name="username" placeholder="{{ t['Username'] }}" class="w-full p-2 rounded bg-gray-700 text-white text-sm sm:text-base" required>
             </div>
             <div class="mb-4">
-                <input type="password" name="password" placeholder="Пароль" class="w-full p-2 rounded bg-gray-700 text-white text-sm sm:text-base" required>
+                <input type="password" name="password" placeholder="{{ t['Password'] }}" class="w-full p-2 rounded bg-gray-700 text-white text-sm sm:text-base" required>
             </div>
-            <button type="submit" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm sm:text-base">Войти</button>
+            <button type="submit" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm sm:text-base">{{ t['Login'] }}</button>
         </form>
         <p class="mt-4 text-sm">
-            Нет аккаунта? <a href="{{ url_for('register') }}" class="text-blue-400 hover:text-blue-300">Зарегистрироваться</a>
+            {{ t['No account? Register'] }} <a href="{{ url_for('register') }}" class="text-blue-400 hover:text-blue-300">{{ t['Register'] }}</a>
         </p>
     </div>
 {% endblock %}

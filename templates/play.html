@@ -1,23 +1,23 @@
 {% extends "base.html" %}
 
-{% block title %}Игра{% endblock %}
+{% block title %}{{ t['Guess the Song'] }}{% endblock %}
 
 {% block content %}
     <div class="main-content text-center">
         <div class="block-background p-4 sm:p-6 mb-6">
-            <h2 class="text-lg sm:text-xl font-semibold mb-4">Выберите сложность</h2>
+            <h2 class="text-lg sm:text-xl font-semibold mb-4">{{ t['Choose Level'] }}</h2>
             <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
-                <a href="{{ url_for('play', difficulty='easy', style=session['selected_style']) }}" class="difficulty-button px-4 py-2 sm:px-6 sm:py-3 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm sm:text-base text-center" aria-label="Играть на уровне Лёгкий за +5 очков">
-                    <span class="difficulty-text font-bold">Лёгкий</span>
-                    <span class="points-text">+5 очков</span>
+                <a href="{{ url_for('play', difficulty='easy', style=session['selected_style']) }}" class="difficulty-button px-4 py-2 sm:px-6 sm:py-3 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm sm:text-base text-center" aria-label="{{ t['Easy'] }} {{ t['+5 points'] }}">
+                    <span class="difficulty-text font-bold">{{ t['Easy'] }}</span>
+                    <span class="points-text">{{ t['+5 points'] }}</span>
                 </a>
-                <a href="{{ url_for('play', difficulty='medium', style=session['selected_style']) }}" class="difficulty-button px-4 py-2 sm:px-6 sm:py-3 rounded-lg bg-yellow-600 hover:bg-yellow-700 text-white text-sm sm:text-base text-center" aria-label="Играть на уровне Средний за +10 очков">
-                    <span class="difficulty-text font-bold">Средний</span>
-                    <span class="points-text">+10 очков</span>
+                <a href="{{ url_for('play', difficulty='medium', style=session['selected_style']) }}" class="difficulty-button px-4 py-2 sm:px-6 sm:py-3 rounded-lg bg-yellow-600 hover:bg-yellow-700 text-white text-sm sm:text-base text-center" aria-label="{{ t['Medium'] }} {{ t['+10 points'] }}">
+                    <span class="difficulty-text font-bold">{{ t['Medium'] }}</span>
+                    <span class="points-text">{{ t['+10 points'] }}</span>
                 </a>
-                <a href="{{ url_for('play', difficulty='hard', style=session['selected_style']) }}" class="difficulty-button px-4 py-2 sm:px-6 sm:py-3 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm sm:text-base text-center" aria-label="Играть на уровне Сложный за +15 очков">
-                    <span class="difficulty-text font-bold">Сложный</span>
-                    <span class="points-text">+15 очков</span>
+                <a href="{{ url_for('play', difficulty='hard', style=session['selected_style']) }}" class="difficulty-button px-4 py-2 sm:px-6 sm:py-3 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm sm:text-base text-center" aria-label="{{ t['Hard'] }} {{ t['+15 points'] }}">
+                    <span class="difficulty-text font-bold">{{ t['Hard'] }}</span>
+                    <span class="points-text">{{ t['+15 points'] }}</span>
                 </a>
             </div>
         </div>
@@ -25,12 +25,12 @@
         {% if track and options %}
         <div class="block-background p-4 sm:p-6 mb-6">
             <div class="flex flex-col sm:flex-row justify-center items-center mb-4">
-                <h2 class="text-lg sm:text-xl font-semibold mb-2 sm:mb-0 sm:mr-4">Угадайте песню</h2>
+                <h2 class="text-lg sm:text-xl font-semibold mb-2 sm:mb-0 sm:mr-4">{{ t['Guess the Song'] }}</h2>
                 <div class="flex items-center">
                     <span id="timer" class="text-sm bg-gray-800 px-3 py-1 rounded">
                         {{ duration }}с
                     </span>
-                    <span class="ml-4 text-sm bg-purple-600 px-3 py-1 rounded">Очки: {{ current_user.score }}</span>
+                    <span class="ml-4 text-sm bg-purple-600 px-3 py-1 rounded">{{ t['Points'] }}: {{ current_user.score }}</span>
                 </div>
             </div>
 
@@ -48,11 +48,11 @@
                 </div>
                 <div id="audio-loading" class="flex items-center ml-4" style="display: none;">
                     <div class="loader" style="width: 16px; height: 16px;"></div>
-                    <span class="ml-2 text-sm text-gray-400">Загрузка...</span>
+                    <span class="ml-2 text-sm text-gray-400">{{ t['Loading...'] }}</span>
                 </div>
             </div>
             <p id="audio-error" class="text-red-400 text-sm mt-2" style="display: none;">
-                Не удалось воспроизвести аудио. <a href="{{ url_for('play', difficulty=difficulty, style=session['selected_style']) }}" class="text-blue-400 hover:text-blue-300">Попробуйте снова</a>.
+                {{ t['Cannot play audio. Try again.'] }} <a href="{{ url_for('play', difficulty=difficulty, style=session['selected_style']) }}" class="text-blue-400 hover:text-blue-300">{{ t['Next'] }}</a>.
             </p>
         </div>
 
@@ -63,7 +63,7 @@
             <div class="block-background p-4 sm:p-6 rounded-lg">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-full sm:max-w-lg mx-auto">
                     {% for option in options %}
-                        <label class="option-card p-4 rounded-lg cursor-pointer min-h-[60px]" aria-label="Выбрать {{ option.title }} от {{ option.artist }}">
+                        <label class="option-card p-4 rounded-lg cursor-pointer min-h-[60px]" aria-label="{{ t['Answer'] }} {{ option.title }} {{ t['from'] }} {{ option.artist }}">
                             <input type="radio" name="guess" value="{{ option.id }}" class="hidden" required>
                             <div class="flex items-center">
                                 <div class="w-10 h-10 bg-gray-700 rounded flex items-center justify-center mr-3">
@@ -86,11 +86,11 @@
                 <p id="result-answer" class="mb-4 text-sm sm:text-base"></p>
                 <div id="result-loading" class="flex justify-center items-center mb-4" style="display: none;">
                     <div class="loader"></div>
-                    <p class="ml-2 text-gray-400 text-sm">Обработка...</p>
+                    <p class="ml-2 text-gray-400 text-sm">{{ t['Loading...'] }}</p>
                 </div>
                 <div class="space-x-4">
                     <a id="next-button" href="{{ url_for('play', difficulty=difficulty, style=session['selected_style']) }}" class="px-4 py-2 sm:px-6 sm:py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm sm:text-base text-center">
-                        Дальше
+                        {{ t['Next'] }}
                     </a>
                 </div>
             </div>
@@ -98,10 +98,10 @@
 
         <div id="timeout-modal" class="modal hidden">
             <div class="modal-content block-background p-4 sm:p-6 max-w-full sm:max-w-md">
-                <h2 class="text-lg sm:text-xl font-semibold mb-4">Время истекло!</h2>
-                <p class="mb-4 text-sm sm:text-base">Ответ: <strong>{{ track.title }}</strong> от {{ track.artist }}</p>
+                <h2 class="text-lg sm:text-xl font-semibold mb-4">{{ t['Time is up!'] }}</h2>
+                <p class="mb-4 text-sm sm:text-base">{{ t['Answer'] }}: <strong>{{ track.title }}</strong> {{ t['from'] }} {{ track.artist }}</p>
                 <a href="{{ url_for('play', difficulty=difficulty, style=session['selected_style']) }}" class="px-4 py-2 sm:px-6 sm:py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm sm:text-base text-center">
-                    Дальше
+                    {{ t['Next'] }}
                 </a>
             </div>
         </div>
@@ -109,6 +109,7 @@
     </div>
 
     <script>
+        const translations = {{ t | tojson }};
         let currentFetch = null;
         let nextTrack = null;
         let equalizerTimeout = null;
@@ -210,7 +211,7 @@
                 preloadNextTrack();
                 playAttempts = 0;
             }).catch(error => {
-                console.error('Ошибка воспроизведения:', error);
+                console.error(translations['Cannot play audio. Try again.'], error);
                 errorElement.style.display = 'block';
                 equalizer.style.display = 'none';
                 audioLoading.style.display = 'none';
@@ -305,9 +306,9 @@
                 const isCorrect = option.value === trackId;
 
                 // Показываем результат сразу
-                resultTitle.textContent = isCorrect ? 'Правильно!' : 'Неправильно';
+                resultTitle.textContent = isCorrect ? translations['Correct!'] : translations['Incorrect'];
                 resultTitle.className = `text-lg sm:text-xl font-semibold mb-4 ${isCorrect ? 'correct' : ''}`;
-                resultAnswer.textContent = `Ответ: ${trackTitle} от ${trackArtist}`;
+                resultAnswer.textContent = `${translations['Answer']}: ${trackTitle} ${translations['from']} ${trackArtist}`;
                 resultModal.classList.remove('hidden');
                 resultLoading.style.display = 'none';
 
@@ -329,7 +330,7 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.error) {
-                        console.error('Ошибка сервера:', data.error);
+                        console.error(translations['Filter error:'], data.error);
                     }
                     if (nextTrack) {
                         document.getElementById('next-button').href = '#';
@@ -341,7 +342,7 @@
                 })
                 .catch(error => {
                     if (error.name !== 'AbortError') {
-                        console.error('Ошибка:', error);
+                        console.error(translations['Filter error:'], error);
                     }
                     currentFetch = null;
                 });

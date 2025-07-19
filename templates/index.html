@@ -1,29 +1,29 @@
 {% extends "base.html" %}
 
-{% block title %}Главная{% endblock %}
+{% block title %}{{ t['MusicQuiz'] }}{% endblock %}
 
 {% block content %}
     <div class="text-center">
         {% if not current_user.is_authenticated %}
             <div class="welcome-text mb-6 p-4 rounded-lg text-gray-200 text-sm sm:text-base">
-                <h2 class="text-lg sm:text-xl font-semibold mb-2">Вас приветствует игра MusicQuiz!</h2>
-                <p>Отгадывайте мелодии, получайте очки, поднимайтесь в турнирной таблице. Время игры неограничено, вопросы следуют бесконечно, пока вы не покинете сайт. Удачи!</p>
+                <h2 class="text-lg sm:text-xl font-semibold mb-2">{{ t['Welcome to MusicQuiz!'] }}</h2>
+                <p>{{ t['Guess the melodies, earn points, climb the leaderboard. The game time is unlimited, questions continue endlessly until you leave the site. Good luck!'] }}</p>
             </div>
         {% endif %}
         <div class="block-background p-4 sm:p-6 mb-6 animate-slide-in">
-            <h2 class="text-lg sm:text-xl font-semibold mb-4">Выберите уровень</h2>
+            <h2 class="text-lg sm:text-xl font-semibold mb-4">{{ t['Choose Level'] }}</h2>
             <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
-                <a href="{{ url_for('play', difficulty='easy', style=session['selected_style'] or 'any') }}" class="difficulty-button px-4 py-2 sm:px-6 sm:py-3 rounded-lg bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white text-sm sm:text-base text-center transition-all duration-200 hover:scale-105" aria-label="Играть на уровне Лёгкий за +5 очков">
-                    <span class="difficulty-text font-bold">Лёгкий</span>
-                    <span class="points-text">+5 очков</span>
+                <a href="{{ url_for('play', difficulty='easy', style=session['selected_style'] or 'any') }}" class="difficulty-button px-4 py-2 sm:px-6 sm:py-3 rounded-lg bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white text-sm sm:text-base text-center transition-all duration-200 hover:scale-105" aria-label="{{ t['Easy'] }} {{ t['+5 points'] }}">
+                    <span class="difficulty-text font-bold">{{ t['Easy'] }}</span>
+                    <span class="points-text">{{ t['+5 points'] }}</span>
                 </a>
-                <a href="{{ url_for('play', difficulty='medium', style=session['selected_style'] or 'any') }}" class="difficulty-button px-4 py-2 sm:px-6 sm:py-3 rounded-lg bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-700 hover:to-yellow-600 text-white text-sm sm:text-base text-center transition-all duration-200 hover:scale-105" aria-label="Играть на уровне Средний за +10 очков">
-                    <span class="difficulty-text font-bold">Средний</span>
-                    <span class="points-text">+10 очков</span>
+                <a href="{{ url_for('play', difficulty='medium', style=session['selected_style'] or 'any') }}" class="difficulty-button px-4 py-2 sm:px-6 sm:py-3 rounded-lg bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-700 hover:to-yellow-600 text-white text-sm sm:text-base text-center transition-all duration-200 hover:scale-105" aria-label="{{ t['Medium'] }} {{ t['+10 points'] }}">
+                    <span class="difficulty-text font-bold">{{ t['Medium'] }}</span>
+                    <span class="points-text">{{ t['+10 points'] }}</span>
                 </a>
-                <a href="{{ url_for('play', difficulty='hard', style=session['selected_style'] or 'any') }}" class="difficulty-button px-4 py-2 sm:px-6 sm:py-3 rounded-lg bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 text-white text-sm sm:text-base text-center transition-all duration-200 hover:scale-105" aria-label="Играть на уровне Сложный за +15 очков">
-                    <span class="difficulty-text font-bold">Сложный</span>
-                    <span class="points-text">+15 очков</span>
+                <a href="{{ url_for('play', difficulty='hard', style=session['selected_style'] or 'any') }}" class="difficulty-button px-4 py-2 sm:px-6 sm:py-3 rounded-lg bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 text-white text-sm sm:text-base text-center transition-all duration-200 hover:scale-105" aria-label="{{ t['Hard'] }} {{ t['+15 points'] }}">
+                    <span class="difficulty-text font-bold">{{ t['Hard'] }}</span>
+                    <span class="points-text">{{ t['+15 points'] }}</span>
                 </a>
             </div>
         </div>

@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 
-{% block title %}Таблица лидеров{% endblock %}
+{% block title %}{{ t['Leaderboard'] }}{% endblock %}
 
 {% block content %}
     <div class="text-center">
-        <h2 class="text-lg sm:text-xl font-semibold mb-4">Таблица лидеров</h2>
+        <h2 class="text-lg sm:text-xl font-semibold mb-4">{{ t['Leaderboard'] }}</h2>
         <div class="block-background p-4 sm:p-6 rounded-lg max-w-full sm:max-w-lg mx-auto mb-6">
-            <h3 class="text-base sm:text-lg font-semibold mb-4">Топ за 24 часа</h3>
+            <h3 class="text-base sm:text-lg font-semibold mb-4">{{ t['Top 24 Hours'] }}</h3>
             <div class="space-y-3">
                 {% for leader in daily_leaders %}
                     <div class="flex items-center justify-between p-2 bg-gray-700 rounded text-sm {% if current_user.is_authenticated and leader.username == current_user.username %}bg-blue-600{% endif %}">
@@ -14,10 +14,10 @@
                             <span class="w-6 h-6 {{ 'bg-yellow-500' if loop.index == 1 else 'bg-gray-500' if loop.index == 2 else 'bg-amber-800' if loop.index == 3 else '' }} rounded-full flex items-center justify-center text-xs font-bold mr-3">{{ loop.index }}</span>
                             <span class="truncate">{{ leader.username }}</span>
                         </div>
-                        <span class="font-bold">{{ leader.total_score }} очков</span>
+                        <span class="font-bold">{{ leader.total_score }} {{ t['points'] }}</span>
                     </div>
                 {% else %}
-                    <p class="text-sm text-gray-400">Нет результатов за последние 24 часа</p>
+                    <p class="text-sm text-gray-400">{{ t['No results for the last 24 hours'] }}</p>
                 {% endfor %}
                 {% if current_user.is_authenticated and user_daily_rank > 5 %}
                     <div class="flex items-center justify-between p-2 bg-blue-600 rounded text-sm">
@@ -25,13 +25,13 @@
                             <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold mr-3">{{ user_daily_rank }}</span>
                             <span class="truncate">{{ current_user.username }}</span>
                         </div>
-                        <span class="font-bold">{{ current_user.score }} очков</span>
+                        <span class="font-bold">{{ current_user.score }} {{ t['points'] }}</span>
                     </div>
                 {% endif %}
             </div>
         </div>
         <div class="block-background p-4 sm:p-6 rounded-lg max-w-full sm:max-w-lg mx-auto">
-            <h3 class="text-base sm:text-lg font-semibold mb-4">Общий топ</h3>
+            <h3 class="text-base sm:text-lg font-semibold mb-4">{{ t['Overall Top'] }}</h3>
             <div class="space-y-3">
                 {% for leader in leaders %}
                     <div class="flex items-center justify-between p-2 bg-gray-800 rounded text-sm {% if current_user.is_authenticated and leader.username == current_user.username %}bg-blue-600{% endif %}">
@@ -39,7 +39,7 @@
                             <span class="w-6 h-6 {{ 'bg-yellow-500' if loop.index == 1 else 'bg-gray-500' if loop.index == 2 else 'bg-amber-800' if loop.index == 3 else '' }} rounded-full flex items-center justify-center text-xs font-bold mr-3">{{ loop.index }}</span>
                             <span class="truncate">{{ leader.username }}</span>
                         </div>
-                        <span class="font-bold">{{ leader.score }} очков</span>
+                        <span class="font-bold">{{ leader.score }} {{ t['points'] }}</span>
                     </div>
                 {% endfor %}
                 {% if current_user.is_authenticated and user_overall_rank > 5 %}
@@ -48,7 +48,7 @@
                             <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold mr-3">{{ user_overall_rank }}</span>
                             <span class="truncate">{{ current_user.username }}</span>
                         </div>
-                        <span class="font-bold">{{ current_user.score }} очков</span>
+                        <span class="font-bold">{{ current_user.score }} {{ t['points'] }}</span>
                     </div>
                 {% endif %}
             </div>
