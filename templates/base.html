@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}{% endblock %} - {{ t['MusicQuiz'] }}</title>
+    <title>{% block title %}{% endblock %} - {{ t['Quisic'] }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='1.0') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='3.0') }}">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
 </head>
 <body class="relative flex flex-col min-h-screen">
@@ -20,22 +20,23 @@
                 </button>
                 <a href="{{ url_for('index') }}">
                     <h1 class="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 bg-clip-text text-transparent">
-                        <i class="fas fa-music mr-2"></i>{{ t['MusicQuiz'] }}
+                        <i class="fas fa-music mr-2"></i>{{ t['Quisic'] }}
                     </h1>
                 </a>
             </div>
             <div class="flex items-center space-x-4">
                 <!-- Переключатель языка -->
-                <div class="flex space-x-2">
-                    {% for lang in config['SUPPORTED_LOCALES'] %}
-                        <a href="{{ url_for('set_language', lang=lang) }}"
-                           class="px-2 py-1 rounded text-sm font-medium transition-all duration-200
-                                  {% if lang == get_locale() %}bg-gradient-to-r from-blue-500 to-purple-600 text-white{% else %}text-gray-400 hover:bg-gray-700{% endif %}"
-                           title="{{ lang.upper() }}">
-                            {% if lang == 'ru' %}🇷🇺{% elif lang == 'en' %}🇬🇧{% elif lang == 'es' %}🇪🇸{% endif %}
-                            {{ lang.upper() }}
-                        </a>
-                    {% endfor %}
+                <div class="relative">
+                    <select id="language-select" class="filter-select text-sm sm:text-base">
+                        <option value="ru" {% if get_locale() == 'ru' %}selected{% endif %}>🇷🇺 Русский</option>
+                        <option value="en" {% if get_locale() == 'en' %}selected{% endif %}>🇬🇧 English</option>
+                        <option value="es" {% if get_locale() == 'es' %}selected{% endif %}>🇪🇸 Español</option>
+                        <option value="zh" {% if get_locale() == 'zh' %}selected{% endif %}>🇨🇳 中文</option>
+                        <option value="ja" {% if get_locale() == 'ja' %}selected{% endif %}>🇯🇵 日本語</option>
+                        <option value="pt" {% if get_locale() == 'pt' %}selected{% endif %}>🇵🇹 Português</option>
+                        <option value="fr" {% if get_locale() == 'fr' %}selected{% endif %}>🇫🇷 Français</option>
+                        <option value="de" {% if get_locale() == 'de' %}selected{% endif %}>🇩🇪 Deutsch</option>
+                    </select>
                 </div>
                 {% if current_user.is_authenticated %}
                     <div class="flex items-center space-x-2">
@@ -62,7 +63,7 @@
                     <form id="filter-form" method="POST" action="/set_filter">
                         <div class="filter-group">
                             <label for="style-select" class="block mb-2 text-sm sm:text-base">{{ t['Genre'] }}</label>
-                            <select id="style-select" name="style" class="filter-select w-full text-sm sm:text-base transition-colors duration-200">
+                            <select id="style-select" name="style" class="filter-select w-full text-sm sm:text-base">
                                 <option value="any" {% if session['selected_style'] == 'any' %}selected{% endif %}>{{ t['Any'] }}</option>
                                 <option value="Pop" {% if session['selected_style'] == 'Pop' %}selected{% endif %}>{{ t['Pop'] }}</option>
                                 <option value="Rock" {% if session['selected_style'] == 'Rock' %}selected{% endif %}>{{ t['Rock'] }}</option>
@@ -73,7 +74,7 @@
                                 <option value="Soul _ Funk" {% if session['selected_style'] == 'Soul _ Funk' %}selected{% endif %}>{{ t['Soul _ Funk'] }}</option>
                             </select>
                         </div>
-                        <button type="submit" class="apply-btn w-full mt-2 text-sm sm:text-base bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 transition-all duration-200">{{ t['Apply Filter'] }}</button>
+                        <button type="submit" class="apply-btn w-full mt-2 text-sm sm:text-base">{{ t['Apply Filter'] }}</button>
                     </form>
                 </div>
                 <!-- Чат -->
@@ -104,7 +105,7 @@
                     {% if current_user.is_authenticated %}
                         <form id="chat-form-preview" class="chat-input-form">
                             <input type="text" id="chat-input-preview" class="chat-input text-sm" placeholder="{{ t['Type a message...'] }}" required>
-                            <button type="submit" class="chat-send-btn bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
+                            <button type="submit" class="chat-send-btn">
                                 <i class="fas fa-paper-plane"></i>
                             </button>
                         </form>
@@ -194,7 +195,7 @@
             {% if current_user.is_authenticated %}
                 <form id="chat-form-fullscreen" class="chat-input-form mt-4">
                     <input type="text" id="chat-input-fullscreen" class="chat-input text-sm" placeholder="{{ t['Type a message...'] }}" required>
-                    <button type="submit" class="chat-send-btn bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
+                    <button type="submit" class="chat-send-btn">
                         <i class="fas fa-paper-plane"></i>
                     </button>
                 </form>
@@ -251,7 +252,7 @@
     </div>
     <!-- Футер -->
     <footer class="w-full py-4 text-center text-gray-400 text-sm bg-gray-900 z-10">
-        <p>©2025 {{ t['MusicQuiz'] }}. {{ t['All rights reserved.'] }}</p>
+        <p>©2025 {{ t['Quisic'] }}. {{ t['All rights reserved.'] }}</p>
     </footer>
 
     <script>
@@ -389,6 +390,26 @@
               })
               .catch(error => console.error(translations['Filter error:'], error));
         });
+
+        // Обработчик смены языка
+        const languageSelect = document.getElementById('language-select');
+        if (languageSelect) {
+            languageSelect.addEventListener('change', () => {
+                const lang = languageSelect.value;
+                fetch('/set_language', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ lang: lang })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        window.location.reload();
+                    }
+                })
+                .catch(error => console.error('Error changing language:', error));
+            });
+        }
 
         window.addEventListener('load', () => {
             const styleSelect = document.getElementById('style-select');

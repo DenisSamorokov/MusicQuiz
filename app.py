@@ -16,7 +16,7 @@ app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'uxyn32814ex9d3_i23ur8iu2')
 app.config['SESSION_TYPE'] = 'filesystem'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///music_quiz.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SUPPORTED_LOCALES'] = ['ru', 'en', 'es']
+app.config['SUPPORTED_LOCALES'] = ['ru', 'en', 'es', 'zh', 'ja', 'pt', 'fr', 'de']
 
 socketio = SocketIO(app, async_mode='eventlet', cors_allowed_origins="*", ping_timeout=10, ping_interval=5, max_http_buffer_size=1000000)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -38,12 +38,6 @@ def get_translations():
 @app.context_processor
 def inject_translations():
     return dict(t=get_translations(), get_locale=lambda: session.get('lang', request.accept_languages.best_match(app.config['SUPPORTED_LOCALES']) or 'ru'))
-
-@app.route('/set_language/<lang>')
-def set_language(lang):
-    if lang in app.config['SUPPORTED_LOCALES']:
-        session['lang'] = lang
-    return redirect(request.referrer or url_for('index'))
 
 init_routes(app, socketio)
 

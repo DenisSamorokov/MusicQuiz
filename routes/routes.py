@@ -3,6 +3,7 @@ from flask_login import login_user, login_required, logout_user, current_user
 from flask_socketio import emit
 from models.models import User, Message, ScoreEvent, db
 from utils.track_utils import select_track_and_options
+from translations import TRANSLATIONS
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
 import requests
@@ -14,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 def init_routes(app: Flask, socketio=None):
     @app.context_processor
-    def inject_user_ranks():
+    def inject_user_ranks_and_translations():
         if current_user.is_authenticated:
             time_threshold = datetime.utcnow() - timedelta(hours=24)
             try:
@@ -32,7 +33,15 @@ def init_routes(app: Flask, socketio=None):
         else:
             user_daily_rank = None
             user_overall_rank = None
-        return dict(user_daily_rank=user_daily_rank, user_overall_rank=user_overall_rank)
+        current_locale = session.get('lang', request.accept_languages.best_match(['ru', 'en', 'es', 'zh', 'ja', 'pt', 'fr', 'de']) or 'ru')
+        translations = TRANSLATIONS.get(current_locale, TRANSLATIONS['ru'])
+        return dict(
+            user_daily_rank=user_daily_rank,
+            user_overall_rank=user_overall_rank,
+            t=translations,
+            get_locale=lambda: current_locale,
+            config={'SUPPORTED_LOCALES': ['ru', 'en', 'es', 'zh', 'ja', 'pt', 'fr', 'de']}
+        )
 
     def check_deezer_api():
         try:
@@ -61,8 +70,8 @@ def init_routes(app: Flask, socketio=None):
     def play(difficulty):
         valid_difficulties = ['easy', 'medium', 'hard']
         if difficulty not in valid_difficulties:
-            flash("Неверный уровень сложности. Выберите easy, medium или hard.", "error")
-            return redirect(url_for('index'))
+            logger.error(f"Invalid difficulty: {difficulty}")
+            return render_template('play.html', error="Неверный уровень сложности. Выберите easy, medium или hard.")
 
         if 'used_artists' not in session or not isinstance(session['used_artists'], dict):
             session['used_artists'] = {'easy': [], 'medium': [], 'hard': []}
@@ -70,16 +79,18 @@ def init_routes(app: Flask, socketio=None):
             session['used_artists'][difficulty] = []
         session['used_artists'][difficulty] = session['used_artists'][difficulty][-100:]
 
-        style = request.args.get('style', 'any')
+        style = request.args.get('style', session.get('selected_style', 'any'))
         session['selected_style'] = style
+        current_locale = session.get('lang', request.accept_languages.best_match(['ru', 'en', 'es', 'zh', 'ja', 'pt', 'fr', 'de']) or 'ru')
+        logger.debug(f"Play route: difficulty={difficulty}, style={style}, locale={current_locale}")
 
         if 'used_track_ids' not in session:
             session['used_track_ids'] = []
         session['used_track_ids'] = session['used_track_ids'][-100:]
 
         if not check_deezer_api():
-            flash("Сервис Deezer недоступен. Попробуйте позже.", "error")
-            return redirect(url_for('index'))
+            logger.error("Deezer API unavailable")
+            return render_template('play.html', error="Сервис Deezer недоступен. Попробуйте позже.")
 
         leaders = User.query.order_by(User.score.desc()).limit(5).all()
         time_threshold = datetime.utcnow() - timedelta(hours=24)
@@ -102,43 +113,45 @@ def init_routes(app: Flask, socketio=None):
                     score_event = ScoreEvent(user_id=current_user.id, score=points)
                     db.session.add(score_event)
                     db.session.commit()
+                    logger.debug(f"Correct guess by {current_user.username}, points added: {points}")
                 return jsonify({'status': 'success'})
+            logger.error("Invalid guess or track_id in POST request")
             return jsonify({'error': 'Неверные данные'}), 400
 
         try:
             session_data = dict(session)
             with app.app_context():
                 track, options, updated_session_data = eventlet.spawn(
-                    select_track_and_options, session_data, difficulty, style
+                    select_track_and_options, session_data, difficulty, style, current_locale
                 ).wait()
                 session.update(updated_session_data)
                 session.modified = True
         except Exception as e:
             logger.error(f"Ошибка при загрузке трека: {e}")
-            flash("Не удалось загрузить трек. Попробуйте снова.", "error")
-            return render_template('index.html', leaders=leaders, daily_leaders=daily_leaders, messages=messages)
+            return render_template('play.html', error=f"Не удалось загрузить трек: {str(e)}. Попробуйте снова.")
 
         if not track or len(options) < 4:
-            flash("Не удалось найти достаточно треков. Попробуйте другой уровень сложности или жанр.", "error")
-            return render_template('index.html', leaders=leaders, daily_leaders=daily_leaders, messages=messages)
+            logger.error(f"Track or options invalid: track={track}, options_count={len(options)}")
+            return render_template('play.html', error="Не удалось найти достаточно треков. Попробуйте другой уровень сложности или жанр.")
 
         duration = {'easy': 30, 'medium': 20, 'hard': 10}.get(difficulty, 30)
         track_for_template = {
             'id': track['id'],
             'title': track['title'],
             'artist': track['artist']['name'],
-            'preview_url': track['preview']
+            'preview': track['preview']
         }
         options_for_template = [
             {
                 'id': opt['id'],
                 'title': opt['title'],
                 'artist': opt['artist']['name'],
-                'preview_url': opt.get('preview', None)
+                'preview': opt.get('preview', None)
             }
             for opt in options
         ]
 
+        logger.debug(f"Rendering play.html: track={track['title']}, options={len(options)}, duration={duration}")
         response = make_response(render_template('play.html', track=track_for_template, options=options_for_template,
                                                  difficulty=difficulty, duration=duration, style=style,
                                                  leaders=leaders, daily_leaders=daily_leaders, messages=messages))
@@ -158,24 +171,27 @@ def init_routes(app: Flask, socketio=None):
     @app.route('/preload/<difficulty>/<style>')
     def preload(difficulty, style):
         if not check_deezer_api():
+            logger.error("Deezer API unavailable for preload")
             return jsonify({'error': 'Сервис Deezer недоступен'}), 503
 
+        current_locale = session.get('lang', request.accept_languages.best_match(['ru', 'en', 'es', 'zh', 'ja', 'pt', 'fr', 'de']) or 'ru')
         try:
             session_data = dict(session)
             with app.app_context():
-                correct_track, options, updated_session_data = eventlet.spawn(
-                    select_track_and_options, session_data, difficulty, style
+                track, options, updated_session_data = eventlet.spawn(
+                    select_track_and_options, session_data, difficulty, style, current_locale
                 ).wait()
                 session.update(updated_session_data)
                 session.modified = True
-            if not correct_track:
+            if not track:
+                logger.error("No track returned for preload")
                 return jsonify({'error': 'Не удалось загрузить трек'}), 500
             return jsonify({
                 'track': {
-                    'id': correct_track['id'],
-                    'title': correct_track['title'],
-                    'artist': correct_track['artist']['name'],
-                    'preview_url': correct_track['preview']
+                    'id': track['id'],
+                    'title': track['title'],
+                    'artist': track['artist']['name'],
+                    'preview_url': track['preview']
                 },
                 'options': [
                     {
@@ -197,7 +213,29 @@ def init_routes(app: Flask, socketio=None):
         style = data.get('style', 'any')
         session['selected_style'] = style
         session['game_state'] = 'new'
+        logger.debug(f"Set filter: style={style}")
         return jsonify({'status': 'success', 'style': style})
+
+    @app.route('/set_language', methods=['GET', 'POST'])
+    def set_language():
+        supported_locales = ['ru', 'en', 'es', 'zh', 'ja', 'pt', 'fr', 'de']
+        if request.method == 'POST':
+            data = request.get_json()
+            lang = data.get('lang', 'ru')
+            if lang in supported_locales:
+                session['lang'] = lang
+                logger.debug(f"Language set to: {lang} via POST")
+                return jsonify({'status': 'success', 'lang': lang})
+            logger.error(f"Invalid language: {lang}")
+            return jsonify({'error': 'Invalid language'}), 400
+        else:
+            lang = request.args.get('lang', 'ru')
+            if lang in supported_locales:
+                session['lang'] = lang
+                logger.debug(f"Language set to: {lang} via GET")
+                return redirect(request.referrer or url_for('index'))
+            logger.error(f"Invalid language: {lang}")
+            return redirect(request.referrer or url_for('index'))
 
     @app.route('/reset-session', methods=['POST'])
     @login_required
